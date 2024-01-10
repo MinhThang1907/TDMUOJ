@@ -1,10 +1,12 @@
 import React from "react";
-import { Layout, theme } from "antd";
+import { Layout, theme, Tabs } from "antd";
 import "react-slideshow-image/dist/styles.css";
 import { Slide } from "react-slideshow-image";
 
 import FooterPage from "../components/footer";
 import HeaderPage from "../components/header";
+import News from "../components/news";
+import TopUsers from "../components/topusers";
 
 const { Content } = Layout;
 const images = [
@@ -12,6 +14,14 @@ const images = [
   "/Images/OLPTruongLan9.jpg",
   "/Images/TongKetCLBIT.jpg",
   "/Images/UCPC.jpg",
+];
+
+const itemTabs = [
+  {
+    key: "news",
+    label: "Tin tức",
+    children: <News />,
+  },
 ];
 
 const Home = () => {
@@ -48,6 +58,18 @@ const Home = () => {
               </div>
             ))}
           </Slide>
+          <div className="w-full flex mt-10">
+            <div className="w-3/4">
+              <Tabs
+                // onChange={onChange}
+                type="card"
+                items={itemTabs}
+              />
+            </div>
+            <div className="w-1/4 justify-end">
+              <TopUsers />
+            </div>
+          </div>
         </div>
       </Content>
       <FooterPage />
