@@ -14,7 +14,6 @@ const TopUsers = () => {
             <thead>
               <tr role="row">
                 <th
-                  colspan="1"
                   role="columnheader"
                   title="Toggle SortBy"
                   className="cursor-pointer"
@@ -24,7 +23,6 @@ const TopUsers = () => {
                   </div>
                 </th>
                 <th
-                  colspan="1"
                   role="columnheader"
                   title="Toggle SortBy"
                   className="cursor-pointer"
@@ -35,7 +33,7 @@ const TopUsers = () => {
                 </th>
               </tr>
             </thead>
-            <tbody role="rowgroup" className="px-4">
+            <tbody className="px-4">
               <tr role="row">
                 <td className="py-3 text-sm" role="cell">
                   <div className="flex items-center gap-2">

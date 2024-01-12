@@ -1,12 +1,12 @@
-const accountModel = require("../models/accountModel");
+const newsModel = require("../models/newsModel");
 
 exports.getAll = (req, res) => {
-  accountModel
+  newsModel
     .find()
     .then((data) => {
       res.status(200).json({
         success: true,
-        dataAccounts: data,
+        dataNews: data,
       });
     })
     .catch((err) =>
@@ -16,21 +16,20 @@ exports.getAll = (req, res) => {
     );
 };
 
-exports.addAccount = async (req, res) => {
-  const { username, password, email, name, role } = req.body;
-  const account = new accountModel({
-    username: username,
-    password: password,
-    email: email,
-    name: name,
-    role: role,
+exports.addNews = async (req, res) => {
+  const { title, content, image, idUser } = req.body;
+  const news = new newsModel({
+    title: title,
+    content: content,
+    image: image,
+    idUser: idUser,
   });
-  return account
+  return news
     .save()
     .then((data) => {
       return res.status(201).json({
         success: true,
-        message: "Created account successfully",
+        message: "Created news successfully",
         data: data,
       });
     })
@@ -44,16 +43,17 @@ exports.addAccount = async (req, res) => {
     });
 };
 
-exports.updateAccount = (req, res) => {
-  const { password, email } = req.body;
-  accountModel.findByIdAndUpdate(req.body.id, {
-    password: password,
-    email: email,
+exports.updateNews = (req, res) => {
+  const { title, content, image } = req.body;
+  newsModel.findByIdAndUpdate(req.body.id, {
+    title: title,
+    content: content,
+    image: image,
   })
     .then(() => {
       return res.status(204).json({
         success: true,
-        message: "Update account successfully",
+        message: "Update news successfully",
       });
     })
     .catch((error) => {
@@ -66,12 +66,12 @@ exports.updateAccount = (req, res) => {
     });
 };
 
-exports.deleteAccount = (req, res) => {
-  accountModel.findByIdAndDelete(req.body.id, {})
+exports.deleteNews = (req, res) => {
+  newsModel.findByIdAndDelete(req.body.id, {})
     .then(() => {
       return res.status(204).json({
         success: true,
-        message: "Delete account successfully",
+        message: "Delete news successfully",
       });
     })
     .catch((error) => {

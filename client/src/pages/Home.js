@@ -39,11 +39,11 @@ const Home = () => {
         <div
           style={{
             padding: 24,
-            minHeight: 600,
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
             marginTop: "20px",
           }}
+          className="min-h-screen"
         >
           <Slide autoplay={true}>
             {images.map((element, index) => (

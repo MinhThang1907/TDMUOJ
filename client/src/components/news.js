@@ -1,39 +1,141 @@
 import React from "react";
+import axios from "axios";
+import { useEffect } from "react";
+import { useState } from "react";
+import { Divider, Pagination } from "antd";
+import { Link } from "react-router-dom";
+
+import * as env from "../env.js";
 
 const News = () => {
+  const [dataNews, setDataNews] = useState([]);
+  const [news, setNews] = useState([]);
+
+  const fetchDataNews = () => {
+    axios
+      .get(env.API_URL + "/account", {})
+      .then(function (res) {
+        axios
+          .get(env.API_URL + "/news", {})
+          .then(function (response) {
+            let arr = [];
+            let newsBegin = [];
+            response.data.dataNews.forEach((ele, index) => {
+              let check = res.data.dataAccounts.filter(
+                (x) => x._id === ele.idUser
+              );
+              if (check.length > 0) {
+                arr.push({
+                  key: ele._id,
+                  title: ele.title,
+                  content: ele.content,
+                  image: ele.image,
+                  idUser: ele.idUser,
+                  username: check[0].username,
+                });
+                if (index >= response.data.dataNews.length - 5) {
+                  newsBegin.push({
+                    key: ele._id,
+                    title: ele.title,
+                    content: ele.content,
+                    image: ele.image,
+                    idUser: ele.idUser,
+                    username: check[0].username,
+                  });
+                }
+              } else {
+                arr.push({
+                  key: ele._id,
+                  title: ele.title,
+                  content: ele.content,
+                  image: ele.image,
+                  idUser: ele.idUser,
+                  username: "Không xác định",
+                });
+                if (index >= response.data.dataNews.length - 5) {
+                  newsBegin.push({
+                    key: ele._id,
+                    title: ele.title,
+                    content: ele.content,
+                    image: ele.image,
+                    idUser: ele.idUser,
+                    username: "Không xác định",
+                  });
+                }
+              }
+            });
+            setDataNews(arr.reverse());
+            setNews(newsBegin.reverse());
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  useEffect(() => {
+    fetchDataNews();
+  }, []);
+  const pageChange = (current, pageSize) => {
+    let arr = [];
+    for (
+      let i = (current - 1) * pageSize;
+      i < Math.min(dataNews.length, current * pageSize);
+      i++
+    ) {
+      arr.push(dataNews[i]);
+    }
+    setNews(arr);
+  };
   return (
     <>
-      <div className="bg-white">
-        <div className="container px-6 py-10 mx-auto">
-          <h1 className="text-3xl font-semibold text-gray-800 capitalize lg:text-4xl">
-            From the blog
-          </h1>
-
-          <div className="mt-8 lg:-mx-6 lg:items-center">
-            <div className="mt-6 lg:w-full lg:mt-0 lg:mx-6 ">
-              <p className="mt-3 text-sm text-gray-500 md:text-sm">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Iure veritatis sint autem nesciunt, laudantium quia tempore delect
-              </p>
+      {news.map((item, index) => (
+        <div className="bg-white">
+          <div className="container px-6 py-10 mx-auto">
+            <h1 className="text-3xl font-semibold text-gray-800 capitalize lg:text-4xl">
+              {item.title}
+            </h1>
+            <div className="mt-8 lg:-mx-6 lg:items-center">
+              <div className="mt-6 lg:w-full lg:mt-0 lg:mx-6 ">
+                <p className="mt-3 text-sm text-gray-500 md:text-sm whitespace-pre-line">
+                  {item.content}
+                </p>
+              </div>
             </div>
-          </div>
-          <img
-            className="object-cover w-full rounded-xl mt-5"
-            src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
-            alt=""
-          />
-          <div className="flex items-center mt-6">
             <img
-              className="object-cover object-center w-10 h-10 rounded-full"
-              src="https://images.unsplash.com/photo-1531590878845-12627191e687?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=764&q=80"
+              className="object-cover w-full rounded-xl mt-5"
+              src={item.image}
               alt=""
             />
-            <div className="mx-4">
-              <h1 className="text-sm text-gray-700">Amelia. Anderson</h1>
-              <p className="text-sm text-gray-500">Lead Developer</p>
+            <div className="flex items-center mt-6">
+              <img
+                className="object-cover object-center w-10 h-10 rounded-full"
+                src="https://images.unsplash.com/photo-1531590878845-12627191e687?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=764&q=80"
+                alt=""
+              />
+              <div className="mx-4">
+                <h1 className="text-sm text-gray-700">
+                  {item.username !== "Không xác định" ? (
+                    <Link to={"/profile/".concat(item.idUser)}>
+                      {item.username}
+                    </Link>
+                  ) : (
+                    <p>{item.username}</p>
+                  )}
+                </h1>
+              </div>
             </div>
           </div>
+          <Divider />
         </div>
-      </div>
+      ))}
+      <Pagination
+        defaultPageSize={5}
+        total={dataNews.length}
+        onChange={pageChange}
+      />
     </>
   );
 };
