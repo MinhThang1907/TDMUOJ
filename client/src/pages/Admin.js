@@ -1,9 +1,14 @@
 import React, { useState } from "react";
-import { ProjectOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  ProjectOutlined,
+  SearchOutlined,
+  CalculatorOutlined,
+} from "@ant-design/icons";
 import { Input, Menu, Result } from "antd";
 import { Link } from "react-router-dom";
 
 import DetailNews from "../components/detailAdmin_News";
+import DetailProblem from "../components/detailAdmin_Problem";
 
 export default function Admin() {
   const user = localStorage.getItem("dataUser")
@@ -26,6 +31,11 @@ export default function Admin() {
       <span className="uppercase font-medium text-base">Tin tức</span>,
       "news",
       <ProjectOutlined style={{ fontSize: 20 }} />
+    ),
+    getItem(
+      <span className="uppercase font-medium text-base">Bài tập</span>,
+      "problem",
+      <CalculatorOutlined style={{ fontSize: 20 }} />
     ),
   ];
 
@@ -73,6 +83,15 @@ export default function Admin() {
                 <div className="py-6 px-4">
                   <div className="bg-white shadow rounded-lg p-4 sm:p-6 xl:p-8 2xl:col-span-2">
                     <DetailNews />
+                  </div>
+                </div>
+              </div>
+            )}
+            {key === "problem" && (
+              <div className="h-full w-full bg-gray-50 relative overflow-y-auto lg:ml-64">
+                <div className="py-6 px-4">
+                  <div className="bg-white shadow rounded-lg p-4 sm:p-6 xl:p-8 2xl:col-span-2">
+                    <DetailProblem />
                   </div>
                 </div>
               </div>

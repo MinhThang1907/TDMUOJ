@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 const { Header } = Layout;
 
-const HeaderPage = () => {
+const HeaderPage = ({ currentTab }) => {
   const [items, setItems] = useState([]);
   const [user, setUser] = useState(null);
   const fetchData = () => {
@@ -166,6 +166,7 @@ const HeaderPage = () => {
         }}
         className="justify-center items-center"
         onClick={(e) => console.log(e)}
+        defaultSelectedKeys={[currentTab]}
       />
       {user ? (
         <Menu

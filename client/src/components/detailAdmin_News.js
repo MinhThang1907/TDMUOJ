@@ -56,7 +56,7 @@ export default function DetailNews() {
       >
         <Input
           ref={searchInput}
-          placeholder={`Search ${dataIndex}`}
+          placeholder={`TÌm kiếm`}
           value={selectedKeys[0]}
           onChange={(e) =>
             setSelectedKeys(e.target.value ? [e.target.value] : [])
@@ -76,7 +76,7 @@ export default function DetailNews() {
               width: 90,
             }}
           >
-            Search
+            Tìm
           </Button>
           <Button
             onClick={() => clearFilters && handleReset(clearFilters)}
@@ -85,7 +85,7 @@ export default function DetailNews() {
               width: 90,
             }}
           >
-            Reset
+            Xóa
           </Button>
           <Button
             type="link"
@@ -98,7 +98,7 @@ export default function DetailNews() {
               setSearchedColumn(dataIndex);
             }}
           >
-            Filter
+            Lọc
           </Button>
           <Button
             type="link"
@@ -107,7 +107,7 @@ export default function DetailNews() {
               close();
             }}
           >
-            close
+            Đóng
           </Button>
         </Space>
       </div>
