@@ -224,7 +224,7 @@ export default function DetailProblem({ currentTab, hiddenTag, infoProblem }) {
               </div>
             </div>
           )}
-          {tab === "compiler" && <Compiler defaultInput={problem.input} />}
+          {tab === "compiler" && <Compiler />}
         </div>
       </Content>
       <FooterPage />

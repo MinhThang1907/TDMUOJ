@@ -27,6 +27,7 @@ exports.addSubmission = async (req, res) => {
     maxTime,
     maxMemory,
     status,
+    idLanguage,
     language,
     createTime,
   } = req.body;
@@ -40,6 +41,7 @@ exports.addSubmission = async (req, res) => {
     maxTime: maxTime,
     maxMemory: maxMemory,
     status: status,
+    idLanguage: idLanguage,
     language: language,
     createTime: createTime,
   });
@@ -62,7 +64,7 @@ exports.addSubmission = async (req, res) => {
     });
 };
 
-exports.updateProblem = (req, res) => {
+exports.updateSubmission = (req, res) => {
   const {
     numberOfAcceptedTestCase,
     detailTestCase,
@@ -97,7 +99,7 @@ exports.updateProblem = (req, res) => {
     });
 };
 
-exports.deleteProblem = (req, res) => {
+exports.deleteSubmission = (req, res) => {
   submissionModel
     .findOneAndDelete({ idSubmission: req.body.id }, {})
     .then(() => {

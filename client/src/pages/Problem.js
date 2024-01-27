@@ -215,8 +215,26 @@ export default function Problem({
   const fetchDataProblem = () => {
     axios
       .get(env.API_URL + "/problems", {})
-      .then(function (response) {
-        setDataProblem(response.data.dataProblems.reverse());
+      .then(function (responseProblem) {
+        axios
+          .get(env.API_URL + "/submission", {})
+          .then(function (responseSubmission) {
+            let arr = [];
+            responseProblem.data.dataProblems.forEach((ele) => {
+              arr.push({
+                ...ele,
+                key: ele.idProblem,
+                numberSolved: responseSubmission.data.dataSubmissions.filter(
+                  (x) =>
+                    x.idProblem === ele.idProblem && x.status === "Accepted"
+                ).length,
+              });
+            });
+            setDataProblem(arr.reverse());
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
       })
       .catch(function (error) {
         console.log(error);

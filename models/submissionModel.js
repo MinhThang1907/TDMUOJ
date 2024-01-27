@@ -6,9 +6,11 @@ const submissionSchema = new mongoose.Schema({
   source: { type: String },
   numberOfAcceptedTestCase: { type: Number, default: 0 },
   detailTestCase: { type: Array, default: [] },
-  maxTime: { type: Number },
-  maxMemory: { type: Number },
+  maxTime: { type: Number, default: 0 },
+  maxMemory: { type: Number, default: 0 },
   status: { type: String },
+  colorStatus: { type: String },
+  idLanguage: { type: Number },
   language: { type: String },
   createTime: { type: String },
 });

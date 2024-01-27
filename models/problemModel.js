@@ -7,7 +7,6 @@ const problemSchema = new mongoose.Schema({
   timeLimit: { type: Number },
   memoryLimit: { type: Number },
   tags: { type: Array, default: [] },
-  numberSolved: { type: Number, default: 0 },
   difficulty: { type: Number },
   description: { type: String },
   solved: { type: Array, default: [] },

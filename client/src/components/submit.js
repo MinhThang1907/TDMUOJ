@@ -1,44 +1,76 @@
 import React, { useState } from "react";
 import { Button, Layout, Select, Space, theme } from "antd";
 import Editor from "@monaco-editor/react";
+import axios from "axios";
 
 import * as env from "../env.js";
 
 import HeaderPage from "./header.js";
 import FooterPage from "./footer.js";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import moment from "moment";
 
 const { Content } = Layout;
 
 export default function Submit({ currentTab, infoProblem }) {
-  // const user = localStorage.getItem("dataUser")
-  //   ? JSON.parse(localStorage.getItem("dataUser"))
-  //   : null;
+  const user = localStorage.getItem("dataUser")
+    ? JSON.parse(localStorage.getItem("dataUser"))
+    : null;
+  const shortid = require("shortid");
+  const navigate = useNavigate();
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
   const [code, setCode] = useState("");
   const [lang, setLang] = useState(54);
+  const [nameLanguage, setNameLanguage] = useState("C++");
   const [compileLanguage, setCompileLanguage] = useState("cpp");
 
   const handleChange = (value) => {
     setCompileLanguage(value);
     if (value === "cpp") {
       setLang(54);
+      setNameLanguage("C++");
     } else if (value === "c") {
       setLang(50);
+      setNameLanguage("C");
     } else if (value === "csharp") {
       setLang(51);
+      setNameLanguage("C#");
     } else if (value === "python") {
       setLang(71);
+      setNameLanguage("Python");
     } else if (value === "java") {
       setLang(62);
+      setNameLanguage("Java");
     } else if (value === "javascript") {
       setLang(63);
+      setNameLanguage("JavaScript");
     }
   };
 
-  const Submit = () => {};
+  const Submit = () => {
+    axios
+      .post(env.API_URL + "/submission", {
+        idSubmission: shortid.generate(),
+        idProblem: infoProblem.idProblem,
+        idUser: user._id,
+        source: code,
+        detailTestCase: infoProblem.testCase,
+        maxTime: 0,
+        maxMemory: 0,
+        status: "Đang chờ",
+        idLanguage: lang,
+        language: nameLanguage,
+        createTime: moment().format("DD/MM/YYYY HH:mm"),
+      })
+      .then(function (response) {
+        navigate("/submissions");
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
 
   return (
     <Layout>

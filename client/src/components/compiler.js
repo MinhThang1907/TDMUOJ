@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import Editor from "@monaco-editor/react";
 import { Select, Input, Button } from "antd";
+import axios from "axios";
 
-export default function Compiler({ defaultInput }) {
+import * as env from "../env.js";
+
+export default function Compiler() {
   const [code, setCode] = useState("");
-  const [input, setInput] = useState(defaultInput);
+  const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [lang, setLang] = useState(54);
   const [compileLanguage, setCompileLanguage] = useState("cpp");
@@ -17,8 +20,7 @@ export default function Compiler({ defaultInput }) {
         method: "POST",
         headers: {
           "x-rapidapi-host": "judge0-ce.p.rapidapi.com",
-          "x-rapidapi-key":
-            "bba61640c9msh15defd185341764p1c0ba2jsn5e8d0e8171ff",
+          "x-rapidapi-key": env.key_Judge0_API,
           "content-type": "application/json",
           accept: "application/json",
         },
@@ -26,6 +28,8 @@ export default function Compiler({ defaultInput }) {
           source_code: code,
           stdin: input,
           language_id: lang,
+          cpu_time_limit: 1,
+          memory_limit: 262144,
         }),
       }
     );
@@ -39,7 +43,9 @@ export default function Compiler({ defaultInput }) {
     };
 
     while (
-      jsonGetSolution.status.description !== "Accepted" &&
+      jsonGetSolution.stdout == null &&
+      jsonGetSolution.time == null &&
+      jsonGetSolution.memory == null &&
       jsonGetSolution.stderr == null &&
       jsonGetSolution.compile_output == null
     ) {
@@ -50,19 +56,21 @@ export default function Compiler({ defaultInput }) {
           method: "GET",
           headers: {
             "x-rapidapi-host": "judge0-ce.p.rapidapi.com",
-            "x-rapidapi-key":
-              "bba61640c9msh15defd185341764p1c0ba2jsn5e8d0e8171ff",
+            "x-rapidapi-key": env.key_Judge0_API,
             "content-type": "application/json",
           },
         });
 
         jsonGetSolution = await getSolution.json();
+        console.log(jsonGetSolution);
       }
     }
-    if (jsonGetSolution.stdout) {
+    if (jsonGetSolution.status.description !== "Accepted") {
+      setOutput(jsonGetSolution.status.description);
+    } else if (jsonGetSolution.stdout) {
       const output = atob(jsonGetSolution.stdout);
       setOutput(
-        `Kết quả :\n\n${output}\n\nThời gian chạy : ${jsonGetSolution.time} giây\nBộ nhớ : ${jsonGetSolution.memory} bytes`
+        `Kết quả :\n\n${output}\n\nThời gian chạy : ${jsonGetSolution.time} giây\nBộ nhớ : ${jsonGetSolution.memory} kilobytes`
       );
     } else if (jsonGetSolution.stderr) {
       const error = atob(jsonGetSolution.stderr);
@@ -70,7 +78,7 @@ export default function Compiler({ defaultInput }) {
       setOutput(`Lỗi :${error}`);
     } else {
       const compilation_error = atob(jsonGetSolution.compile_output);
-      setOutput(`Lỗi :${compilation_error}`);
+      setOutput(`Lỗi biên dịch :${compilation_error}`);
     }
   };
   const handleChange = (value) => {
@@ -87,6 +95,85 @@ export default function Compiler({ defaultInput }) {
       setLang(62);
     } else if (value === "javascript") {
       setLang(63);
+    }
+  };
+  const test = async () => {
+    const options = {
+      method: "POST",
+      url: "https://judge0-ce.p.rapidapi.com/submissions/batch",
+      headers: {
+        "content-type": "application/json",
+        "Content-Type": "application/json",
+        "X-RapidAPI-Key": env.key_Judge0_API,
+        "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
+      },
+      data: {
+        submissions: [
+          {
+            language_id: lang,
+            stdin: input,
+            source_code: code,
+          },
+          {
+            language_id: lang,
+            stdin: input,
+            source_code: code,
+          },
+          {
+            language_id: lang,
+            stdin: input,
+            source_code: code,
+          },
+        ],
+      },
+    };
+
+    try {
+      const response = await axios.request(options);
+      const options1 = {
+        method: "GET",
+        url: "https://judge0-ce.p.rapidapi.com/submissions/batch",
+        params: {
+          tokens: response.data.map((v) => v.token).join(","),
+          fields: "*",
+        },
+        headers: {
+          "X-RapidAPI-Key": env.key_Judge0_API,
+          "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
+          "content-type": "application/json",
+        },
+      };
+
+      try {
+        let GetSolution = [
+          {
+            status: { description: "Queue" },
+            stderr: null,
+            compile_output: null,
+          },
+        ];
+
+        while (GetSolution[0].status.description !== "Accepted") {
+          if (response.data[0].token) {
+            const response1 = await axios.request(options1);
+            GetSolution = await response1.data.submissions;
+          }
+        }
+        if (GetSolution.stdout !== null) {
+          const output = GetSolution[0].stdout;
+          console.log(output);
+        } else if (GetSolution.stderr !== null) {
+          const error = GetSolution[0].stderr;
+          console.log(error);
+        } else {
+          const compilation_error = GetSolution[0].compile_output;
+          console.log(compilation_error);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
   return (

@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --inspect server.js"
+    "dev": "nodemon --inspect server.js",
+    "client": "cd client & npm start"
   },
   "keywords": [],
   "author": "",

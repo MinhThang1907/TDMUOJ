@@ -186,6 +186,7 @@ export default function DetailProblem() {
       dataIndex: "key",
       key: "key",
       width: "15%",
+      align: "center",
       ...getColumnSearchProps("idProblem"),
     },
     {
@@ -193,6 +194,7 @@ export default function DetailProblem() {
       dataIndex: "nameProblem",
       key: "nameProblem",
       width: "20%",
+      align: "center",
       ...getColumnSearchProps("nameProblem"),
       ellipsis: true,
     },
@@ -201,6 +203,7 @@ export default function DetailProblem() {
       dataIndex: "tags",
       key: "tags",
       width: "30%",
+      align: "center",
       render: (_, { tags }) => (
         <>
           {tags.map((tag) => {
@@ -214,67 +217,94 @@ export default function DetailProblem() {
       key: "numberSolved",
       dataIndex: "numberSolved",
       width: "10%",
+      align: "center",
       sorter: (a, b) => a.numberSolved - b.numberSolved,
     },
     {
       title: "Hành động",
       key: "action",
+      align: "center",
       render: (item) => (
-        <div className="max-w-full flex-wrap">
-          <Button
-            type="primary"
-            danger
-            onClick={() => deleteProblem({ item: item })}
-          >
-            Xóa
-          </Button>
-          <Button
-            className="bg-sky-500	text-white hover:bg-sky-300 grow-0"
-            onClick={() => {
-              setCurrentKey(item.key);
-              setCurrentNameProblem(item.nameProblem);
-              setCurrentContentProblem(item.contentProblem);
-              setCurrentDescription(item.description);
-              setCurrentExample(item.example);
-              setCurrentTimeLimit(item.timeLimit);
-              setCurrentMemoryLimit(item.memoryLimit);
-              setCurrentTags(item.tags);
-              setCurrentDifficulty(item.difficulty);
-              showModalEditProblem();
-            }}
-          >
-            Chỉnh sửa
-          </Button>
-          <Button
-            className=" grow-0"
-            type="dashed"
-            onClick={() => {
-              setCurrentKey(item.key);
-              setCurrentNameProblem(item.nameProblem);
-              setCurrentContentProblem(item.contentProblem);
-              setCurrentDescription(item.description);
-              setCurrentExample(item.example);
-              setCurrentTimeLimit(item.timeLimit);
-              setCurrentMemoryLimit(item.memoryLimit);
-              setCurrentTags(item.tags);
-              setCurrentDifficulty(item.difficulty);
-              showModalDetailProblem();
-            }}
-          >
-            Chi tiết
-          </Button>
-          <Button
-            className="bg-green-500	text-white hover:bg-green-300 grow-0"
-            onClick={() => {
-              setCurrentTestCase(item.testCase);
-              setCurrentKey(item.key);
-              setCurrentNameProblem(item.nameProblem);
-              showModalAddTestCase();
-            }}
-          >
-            Thêm test case
-          </Button>
-        </div>
+        <Select
+          value="Chọn hành động"
+          style={{ width: "70%" }}
+          options={[
+            {
+              value: "Delete",
+              label: (
+                <Button
+                  type="primary"
+                  danger
+                  onClick={() => deleteProblem({ item: item })}
+                  className="w-full"
+                >
+                  Xóa
+                </Button>
+              ),
+            },
+            {
+              value: "Edit",
+              label: (
+                <Button
+                  className="bg-sky-500	text-white hover:bg-sky-300 w-full"
+                  onClick={() => {
+                    setCurrentKey(item.key);
+                    setCurrentNameProblem(item.nameProblem);
+                    setCurrentContentProblem(item.contentProblem);
+                    setCurrentDescription(item.description);
+                    setCurrentExample(item.example);
+                    setCurrentTimeLimit(item.timeLimit);
+                    setCurrentMemoryLimit(item.memoryLimit);
+                    setCurrentTags(item.tags);
+                    setCurrentDifficulty(item.difficulty);
+                    showModalEditProblem();
+                  }}
+                >
+                  Chỉnh sửa
+                </Button>
+              ),
+            },
+            {
+              value: "Detail",
+              label: (
+                <Button
+                  className="w-full"
+                  type="dashed"
+                  onClick={() => {
+                    setCurrentKey(item.key);
+                    setCurrentNameProblem(item.nameProblem);
+                    setCurrentContentProblem(item.contentProblem);
+                    setCurrentDescription(item.description);
+                    setCurrentExample(item.example);
+                    setCurrentTimeLimit(item.timeLimit);
+                    setCurrentMemoryLimit(item.memoryLimit);
+                    setCurrentTags(item.tags);
+                    setCurrentDifficulty(item.difficulty);
+                    showModalDetailProblem();
+                  }}
+                >
+                  Chi tiết
+                </Button>
+              ),
+            },
+            {
+              value: "addTestCase",
+              label: (
+                <Button
+                  className="bg-green-500	text-white hover:bg-green-300 w-full"
+                  onClick={() => {
+                    setCurrentTestCase(item.testCase);
+                    setCurrentKey(item.key);
+                    setCurrentNameProblem(item.nameProblem);
+                    showModalAddTestCase();
+                  }}
+                >
+                  Thêm test case
+                </Button>
+              ),
+            },
+          ]}
+        ></Select>
       ),
     },
   ];
@@ -285,25 +315,26 @@ export default function DetailProblem() {
   const fetchDataProblems = () => {
     axios
       .get(env.API_URL + "/problems", {})
-      .then(function (response) {
-        let arr = [];
-        response.data.dataProblems.forEach((ele) => {
-          arr.push({
-            key: ele.idProblem,
-            nameProblem: ele.nameProblem,
-            contentProblem: ele.contentProblem,
-            example: ele.example,
-            timeLimit: ele.timeLimit,
-            memoryLimit: ele.memoryLimit,
-            tags: ele.tags,
-            numberSolved: ele.numberSolved,
-            difficulty: ele.difficulty,
-            description: ele.description,
-            testCase: ele.testCase,
-            idContest: ele.idContest,
+      .then(function (responseProblem) {
+        axios
+          .get(env.API_URL + "/submission", {})
+          .then(function (responseSubmission) {
+            let arr = [];
+            responseProblem.data.dataProblems.forEach((ele) => {
+              arr.push({
+                ...ele,
+                key: ele.idProblem,
+                numberSolved: responseSubmission.data.dataSubmissions.filter(
+                  (x) =>
+                    x.idProblem === ele.idProblem && x.status === "Accepted"
+                ).length,
+              });
+            });
+            setDataProblem(arr.reverse());
+          })
+          .catch(function (error) {
+            console.log(error);
           });
-        });
-        setDataProblem(arr.reverse());
       })
       .catch(function (error) {
         console.log(error);
@@ -514,11 +545,18 @@ export default function DetailProblem() {
     });
     setCurrentTestCase(arr);
   };
-  const updateTestCase = () => {
+  const updateTestCase = async () => {
+    let arr = [];
+    await currentTestCase.forEach(async (element) => {
+      arr.push({
+        input: element.input,
+        output: await fixValue({ newValue: element.output }),
+      });
+    });
     axios
       .put(env.API_URL + "/update-testcase-problems", {
         id: currentKey,
-        testCase: currentTestCase,
+        testCase: arr,
       })
       .then(function (response) {
         successMessage();
@@ -528,6 +566,30 @@ export default function DetailProblem() {
       .catch(function (error) {
         console.log(error);
       });
+  };
+
+  const deleteTestCase = ({ id }) => {
+    let arr = [];
+    currentTestCase.forEach((element, index) => {
+      if (index !== id) {
+        arr.push(element);
+      }
+    });
+    setCurrentTestCase(arr);
+  };
+
+  const fixValue = async ({ newValue }) => {
+    let s = "";
+    for (let i = 0; i < newValue.length; i++) {
+      s += newValue[i];
+    }
+    while (
+      s.charCodeAt(s.length - 1) === 10 ||
+      s.charCodeAt(s.length - 1) === 32
+    ) {
+      s = s.substring(0, s.length - 1);
+    }
+    return s;
   };
 
   return (
@@ -1031,9 +1093,18 @@ export default function DetailProblem() {
               <>
                 <div className="flex flex-wrap -mx-3 mb-6">
                   <div className="w-full px-3">
-                    <label className="block uppercase tracking-wide text-gray-700 text-base font-bold mb-2">
-                      Test case {index + 1}
-                    </label>
+                    <div className="w-full flex justify-between">
+                      <label className="block uppercase tracking-wide text-gray-700 text-base font-bold mb-2">
+                        Test case {index + 1}
+                      </label>
+                      <Button
+                        type="primary"
+                        danger
+                        onClick={() => deleteTestCase({ id: index })}
+                      >
+                        Xóa
+                      </Button>
+                    </div>
                     <label className="block uppercase tracking-wide text-gray-700 text-base font-bold mb-2">
                       Đầu vào:
                     </label>
