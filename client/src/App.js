@@ -72,7 +72,7 @@ function App() {
       }
       if (GetSolution[i].status.description !== "Accepted") {
         ans = {
-          status: GetSolution[i].status.description,
+          status: `${GetSolution[i].status.description} test ${i + 1}`,
           output: GetSolution,
           lastTestCase: i,
           maxTime: maxTime * 1000,
@@ -113,7 +113,7 @@ function App() {
       ans = {
         status: `Accepted`,
         output: GetSolution,
-        lastTestCase: 0,
+        lastTestCase: GetSolution.length - 1,
         maxTime: maxTime * 1000,
         maxMemory: maxMemory,
       };
@@ -182,7 +182,7 @@ function App() {
     await axios
       .put(env.API_URL + "/update-submission", {
         id: currentSubmission,
-        numberOfAcceptedTestCase: answer.lastTestCase + 1,
+        numberOfAcceptedTestCase: answer.lastTestCase,
         detailTestCase: answer.output,
         maxTime: answer.maxTime,
         maxMemory: answer.maxMemory,
@@ -216,6 +216,7 @@ function App() {
                     language_id: element.idLanguage,
                     stdin: test.input,
                     source_code: element.source,
+                    expected_output: test.output,
                     cpu_time_limit: problem.timeLimit,
                     memory_limit: problem.memoryLimit * 1024,
                   });
