@@ -190,7 +190,9 @@ export default function DetailProblem({ currentTab, hiddenTag, infoProblem }) {
                     type="primary"
                     ghost
                     className="w-1/2"
-                    onClick={() => navigate("/problems/submit")}
+                    onClick={() =>
+                      navigate("/submit/".concat(infoProblem.idProblem))
+                    }
                   >
                     Gửi bài giải
                   </Button>

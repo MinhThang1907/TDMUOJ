@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Layout, Select, Space, theme } from "antd";
 import Editor from "@monaco-editor/react";
 import axios from "axios";
@@ -7,12 +7,12 @@ import * as env from "../env.js";
 
 import HeaderPage from "./header.js";
 import FooterPage from "./footer.js";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import moment from "moment";
 
 const { Content } = Layout;
 
-export default function Submit({ currentTab, infoProblem }) {
+export default function Submit({ currentTab }) {
   const user = localStorage.getItem("dataUser")
     ? JSON.parse(localStorage.getItem("dataUser"))
     : null;
@@ -25,6 +25,22 @@ export default function Submit({ currentTab, infoProblem }) {
   const [lang, setLang] = useState(54);
   const [nameLanguage, setNameLanguage] = useState("C++");
   const [compileLanguage, setCompileLanguage] = useState("cpp");
+
+  const { idProblem } = useParams();
+  const [infoProblem, setInfoProblem] = useState({});
+
+  useEffect(() => {
+    axios
+      .get(env.API_URL + "/problems", {})
+      .then(function (response) {
+        setInfoProblem(
+          response.data.dataProblems.filter((x) => x.idProblem === idProblem)[0]
+        );
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }, []);
 
   const handleChange = (value) => {
     setCompileLanguage(value);
@@ -63,6 +79,7 @@ export default function Submit({ currentTab, infoProblem }) {
         idLanguage: lang,
         language: nameLanguage,
         createTime: moment().format("DD/MM/YYYY HH:mm"),
+        time: moment().format("YYYY-MM-DD"),
       })
       .then(function (response) {
         navigate("/submissions");

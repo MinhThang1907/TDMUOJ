@@ -144,3 +144,27 @@ exports.updateTestCase = (req, res) => {
       });
     });
 };
+exports.updateSolved = (req, res) => {
+  const { solved } = req.body;
+  problemModel
+    .findOneAndUpdate(
+      { idProblem: req.body.id },
+      {
+        solved: solved,
+      }
+    )
+    .then(() => {
+      return res.status(204).json({
+        success: true,
+        message: "Update solved successfully",
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).json({
+        success: false,
+        message: "Server error. Please try again.",
+        error: error.message,
+      });
+    });
+};

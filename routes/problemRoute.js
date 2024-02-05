@@ -7,5 +7,6 @@ router.post("/problems", problemController.addProblem);
 router.put("/update-problems", problemController.updateProblem);
 router.put("/delete-problems", problemController.deleteProblem);
 router.put("/update-testcase-problems", problemController.updateTestCase);
+router.put("/update-solved-problems", problemController.updateSolved);
 
 module.exports = router;

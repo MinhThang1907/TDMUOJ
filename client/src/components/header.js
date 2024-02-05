@@ -137,7 +137,11 @@ const HeaderPage = ({ currentTab }) => {
       key: "profile",
     },
     {
-      label: <Link onClick={Logout}>ĐĂNG XUẤT</Link>,
+      label: (
+        <Link to="/" onClick={Logout}>
+          ĐĂNG XUẤT
+        </Link>
+      ),
       key: "logout",
     },
   ];
@@ -165,7 +169,6 @@ const HeaderPage = ({ currentTab }) => {
           minWidth: 0,
         }}
         className="justify-center items-center"
-        onClick={(e) => console.log(e)}
         defaultSelectedKeys={[currentTab]}
       />
       {user ? (
@@ -174,7 +177,6 @@ const HeaderPage = ({ currentTab }) => {
           mode="horizontal"
           items={UserLogout}
           className="justify-center items-center"
-          onClick={(e) => console.log(e)}
         />
       ) : (
         <Menu
@@ -182,7 +184,6 @@ const HeaderPage = ({ currentTab }) => {
           mode="horizontal"
           items={LoginRegister}
           className="justify-center items-center"
-          onClick={(e) => console.log(e)}
         />
       )}
     </Header>

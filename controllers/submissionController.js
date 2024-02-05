@@ -30,6 +30,7 @@ exports.addSubmission = async (req, res) => {
     idLanguage,
     language,
     createTime,
+    time,
   } = req.body;
   const submission = new submissionModel({
     idSubmission: idSubmission,
@@ -44,6 +45,7 @@ exports.addSubmission = async (req, res) => {
     idLanguage: idLanguage,
     language: language,
     createTime: createTime,
+    time: time,
   });
   return submission
     .save()

@@ -156,6 +156,7 @@ export default function Problem({
       dataIndex: "idProblem",
       key: "idProblem",
       width: "15%",
+      align: "center",
       ...getColumnSearchProps("idProblem"),
       render: (_, text) => (
         <Link
@@ -201,12 +202,14 @@ export default function Problem({
       key: "difficulty",
       dataIndex: "difficulty",
       width: "10%",
+      align: "center",
       sorter: (a, b) => a.difficulty - b.difficulty,
     },
     {
       title: "Số AC",
       key: "numberSolved",
       dataIndex: "numberSolved",
+      align: "center",
       sorter: (a, b) => a.numberSolved - b.numberSolved,
     },
   ];
@@ -270,47 +273,91 @@ export default function Problem({
   const checkExist = ({ currentTags, tags }) => {
     let count = 0;
     tags.forEach((element) => {
-      if (currentTags.includes(element)) {
+      if (currentTags.filter((x) => x === element).length > 0) {
         count++;
       }
     });
     return count === tags.length;
   };
-
-  useEffect(() => {
+  const fetchFilter = ({
+    startDifficulty,
+    endDifficulty,
+    tags,
+    hiddenAcceptedProblem,
+  }) => {
     axios
       .get(env.API_URL + "/problems", {})
-      .then(function (response) {
-        setDataProblem(
-          response.data.dataProblems
-            .filter(
-              (x) =>
-                x.difficulty >= startDifficulty &&
-                x.difficulty <= endDifficulty &&
-                checkExist({ currentTags: x.tags, tags: tags }) &&
-                (hiddenAcceptedProblem ? !x.solved.includes(user._id) : true)
-            )
-            .reverse()
-        );
+      .then(async (responseProblem) => {
+        axios
+          .get(env.API_URL + "/submission", {})
+          .then(async (responseSubmission) => {
+            let filterArray = await responseProblem.data.dataProblems
+              .filter(
+                (x) =>
+                  x.difficulty >= startDifficulty &&
+                  x.difficulty <= endDifficulty &&
+                  checkExist({ currentTags: x.tags, tags: tags }) &&
+                  (hiddenAcceptedProblem
+                    ? x.solved.filter((userAC) => userAC === user._id).length >
+                      0
+                      ? false
+                      : true
+                    : true)
+              )
+              .reverse();
+            let arr = [];
+            await filterArray.forEach((element) => {
+              arr.push({
+                ...element,
+                key: element.idProblem,
+                numberSolved: responseSubmission.data.dataSubmissions.filter(
+                  (x) =>
+                    x.idProblem === element.idProblem && x.status === "Accepted"
+                ).length,
+              });
+            });
+            setDataProblem(arr);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
       })
       .catch(function (error) {
         console.log(error);
       });
-  }, [startDifficulty, endDifficulty, tags, hiddenAcceptedProblem]);
+  };
 
   const onChangeComplete = (value) => {
     setStartDifficulty(value[0]);
     setEndDifficulty(value[1]);
+    fetchFilter({
+      startDifficulty: value[0],
+      endDifficulty: value[1],
+      tags: tags,
+      hiddenAcceptedProblem: hiddenAcceptedProblem,
+    });
   };
 
   const onChangeTags = (value) => {
     setTags(value);
+    fetchFilter({
+      startDifficulty: startDifficulty,
+      endDifficulty: endDifficulty,
+      tags: value,
+      hiddenAcceptedProblem: hiddenAcceptedProblem,
+    });
   };
   const changeStateHiddenTag = (e) => {
     setHiddenTag(e.target.checked);
   };
   const changeStatehiddenAccepted = (e) => {
     setHiddenAcceptedProblem(e.target.checked);
+    fetchFilter({
+      startDifficulty: startDifficulty,
+      endDifficulty: endDifficulty,
+      tags: tags,
+      hiddenAcceptedProblem: e.target.checked,
+    });
   };
 
   return (
@@ -332,7 +379,15 @@ export default function Problem({
         >
           <div className="w-full flex mt-10">
             <div className="w-3/4">
-              <Table columns={columns} dataSource={dataProblem} />
+              <Table
+                columns={columns}
+                dataSource={dataProblem}
+                rowClassName={(record, index) => {
+                  if (record.solved.filter((x) => x === user._id).length > 0) {
+                    return "bg-green-300";
+                  }
+                }}
+              />
             </div>
             <div className="w-1/4 justify-end">
               <div className="flex flex-col justify-center items-end">

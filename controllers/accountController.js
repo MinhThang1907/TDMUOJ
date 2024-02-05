@@ -46,10 +46,11 @@ exports.addAccount = async (req, res) => {
 
 exports.updateAccount = (req, res) => {
   const { password, email } = req.body;
-  accountModel.findByIdAndUpdate(req.body.id, {
-    password: password,
-    email: email,
-  })
+  accountModel
+    .findByIdAndUpdate(req.body.id, {
+      password: password,
+      email: email,
+    })
     .then(() => {
       return res.status(204).json({
         success: true,
@@ -67,11 +68,34 @@ exports.updateAccount = (req, res) => {
 };
 
 exports.deleteAccount = (req, res) => {
-  accountModel.findByIdAndDelete(req.body.id, {})
+  accountModel
+    .findByIdAndDelete(req.body.id, {})
     .then(() => {
       return res.status(204).json({
         success: true,
         message: "Delete account successfully",
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).json({
+        success: false,
+        message: "Server error. Please try again.",
+        error: error.message,
+      });
+    });
+};
+
+exports.updateAvatar = (req, res) => {
+  const { avatar } = req.body;
+  accountModel
+    .findByIdAndUpdate(req.body.id, {
+      avatar: avatar,
+    })
+    .then(() => {
+      return res.status(204).json({
+        success: true,
+        message: "Update avatar successfully",
       });
     })
     .catch((error) => {

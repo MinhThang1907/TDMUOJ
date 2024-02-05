@@ -13,5 +13,6 @@ const submissionSchema = new mongoose.Schema({
   idLanguage: { type: Number },
   language: { type: String },
   createTime: { type: String },
+  time: { type: String },
 });
 module.exports = mongoose.model("submission", submissionSchema);

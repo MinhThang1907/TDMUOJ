@@ -9,6 +9,10 @@ import Problem from "./pages/Problem";
 import DetailProblem from "./pages/DetailProblem";
 import Submit from "./components/submit";
 import Submission from "./components/submission";
+import Profile from "./pages/Profile.js";
+import Contest from "./pages/Contest.js";
+import Member from "./pages/Member.js";
+import Education from "./pages/Education.js";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -121,7 +125,13 @@ function App() {
     return ans;
   };
 
-  const runTestCase = async ({ submission, testcase, currentSubmission }) => {
+  const runTestCase = async ({
+    submission,
+    testcase,
+    currentSubmission,
+    idProblem,
+    idUser,
+  }) => {
     const options = {
       method: "POST",
       url: "https://judge0-ce.p.rapidapi.com/submissions/batch",
@@ -188,7 +198,30 @@ function App() {
         maxMemory: answer.maxMemory,
         status: answer.status,
       })
-      .then(function (responseUpdateSubmission) {})
+      .then(function (responseUpdateSubmission) {
+        if (answer.status === "Accepted") {
+          axios
+            .get(env.API_URL + "/problems", {})
+            .then(async (response) => {
+              let solved = await response.data.dataProblems.filter(
+                (x) => x.idProblem === idProblem
+              )[0].solved;
+              await solved.push(idUser);
+              axios
+                .put(env.API_URL + "/update-solved-problems", {
+                  id: idProblem,
+                  solved: solved,
+                })
+                .then(function (responseUpdateProblem) {})
+                .catch(function (error) {
+                  console.log(error);
+                });
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+        }
+      })
       .catch(function (error) {
         console.log(error);
       });
@@ -225,6 +258,8 @@ function App() {
                   submission: submission,
                   testcase: problem.testCase,
                   currentSubmission: element.idSubmission,
+                  idProblem: element.idProblem,
+                  idUser: element.idUser,
                 });
               });
             }
@@ -243,7 +278,7 @@ function App() {
   // }, []);
   return (
     <div>
-      <button onClick={grading}>bdwdwjdnww</button>
+      {/* <button onClick={grading}>bdwdwjdnww</button> */}
       <Routes>
         <Route path="/test" element={<Test />}></Route>
         <Route
@@ -268,7 +303,7 @@ function App() {
           }
         ></Route>
         <Route
-          path="/problems/submit"
+          path="/submit/:idProblem"
           element={<Submit currentTab="problems" infoProblem={infoProblem} />}
         ></Route>
         <Route
@@ -279,6 +314,16 @@ function App() {
         <Route path="/login" element={<Login />}></Route>
         <Route path="/" element={<Home />}></Route>
         <Route path="/administration" element={<Admin />}></Route>
+        <Route path="/profile" element={<Profile />}></Route>
+        <Route
+          path="/contest"
+          element={<Contest currentTab="contest" />}
+        ></Route>
+        <Route path="/users" element={<Member currentTab="users" />}></Route>
+        <Route
+          path="/education"
+          element={<Education currentTab="education" />}
+        ></Route>
       </Routes>
     </div>
   );
