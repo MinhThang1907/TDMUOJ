@@ -71,6 +71,7 @@ export default function Submit({ currentTab }) {
         idSubmission: shortid.generate(),
         idProblem: infoProblem.idProblem,
         idUser: user._id,
+        idContest: "none",
         source: code,
         detailTestCase: infoProblem.testCase,
         maxTime: 0,

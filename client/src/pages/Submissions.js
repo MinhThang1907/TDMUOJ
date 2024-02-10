@@ -6,8 +6,8 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 
 import * as env from "../env.js";
 
-import HeaderPage from "./header.js";
-import FooterPage from "./footer.js";
+import HeaderPage from "../components/header.js";
+import FooterPage from "../components/footer.js";
 import { Link } from "react-router-dom";
 import axios from "axios";
 

@@ -12,5 +12,6 @@ const problemSchema = new mongoose.Schema({
   solved: { type: Array, default: [] },
   testCase: { type: Array, default: [] },
   idContest: { type: String, default: "none" },
+  solution: { type: Array },
 });
 module.exports = mongoose.model("problem", problemSchema);

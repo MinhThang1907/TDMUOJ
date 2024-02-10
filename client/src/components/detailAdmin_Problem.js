@@ -701,6 +701,13 @@ export default function DetailProblem() {
               />
             </div>
           </div>
+          <div className="flex flex-wrap -mx-3">
+            <div className="w-full px-3">
+              <label className="block uppercase tracking-wide text-gray-700 text-base font-bold mb-2">
+                Các ví dụ:
+              </label>
+            </div>
+          </div>
           {currentExample &&
             currentExample.map((item, index) => (
               <>

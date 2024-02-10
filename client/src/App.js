@@ -8,7 +8,7 @@ import Login from "./pages/Login";
 import Problem from "./pages/Problem";
 import DetailProblem from "./pages/DetailProblem";
 import Submit from "./components/submit";
-import Submission from "./components/submission";
+import Submission from "./pages/Submissions.js";
 import Profile from "./pages/Profile.js";
 import Contest from "./pages/Contest.js";
 import Member from "./pages/Member.js";

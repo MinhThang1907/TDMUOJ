@@ -31,7 +31,14 @@ export default function Contest({ currentTab }) {
             marginTop: "20px",
           }}
           className="min-h-screen"
-        ></div>
+        >
+          <div className="w-full flex mt-10">
+            <div className="w-3/4">
+              
+            </div>
+            <div className="w-1/4 justify-end"></div>
+          </div>
+        </div>
       </Content>
       <FooterPage />
     </Layout>
