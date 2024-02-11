@@ -1,7 +1,9 @@
-import React from "react";
-import { Layout, theme } from "antd";
+import { React, useState, useEffect } from "react";
+import { Layout, theme, Table } from "antd";
+import axios from "axios";
+import moment from "moment";
 
-// import * as env from "../env.js";
+import * as env from "../env.js";
 
 import HeaderPage from "../components/header.js";
 import FooterPage from "../components/footer.js";
@@ -15,6 +17,83 @@ export default function Contest({ currentTab }) {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+
+  const [contestsAreGoingOn, setContestsAreGoingOn] = useState([]);
+  const [contestsInTheFuture, setContestsInTheFuture] = useState([]);
+  const [contestsHavePassed, setContestsHavePassed] = useState([]);
+  useEffect(() => {
+    axios
+      .get(env.API_URL + "/contest", {})
+      .then(function (responseContest) {
+        setContestsHavePassed(
+          responseContest.data.dataContests.filter(async (x) => {
+            let timeStart = await moment(x.timeStart, "DD/MM/YYYY HH:mm");
+            let timeEnd = await moment(x.timeStart, "DD/MM/YYYY HH:mm").add(
+              x.lengthTime,
+              "minutes"
+            );
+            if (moment().isAfter(timeEnd)) {
+              return true;
+            } else {
+              return false;
+            }
+          })
+        );
+        setContestsInTheFuture(
+          responseContest.data.dataContests.filter(async (x) => {
+            let timeStart = await moment(x.timeStart, "DD/MM/YYYY HH:mm");
+            let timeEnd = await moment(x.timeStart, "DD/MM/YYYY HH:mm").add(
+              x.lengthTime,
+              "minutes"
+            );
+            if (moment().isBefore(timeStart)) {
+              return true;
+            } else {
+              return false;
+            }
+          })
+        );
+        setContestsAreGoingOn(
+          responseContest.data.dataContests.filter(async (x) => {
+            let timeStart = await moment(x.timeStart, "DD/MM/YYYY HH:mm");
+            let timeEnd = await moment(x.timeStart, "DD/MM/YYYY HH:mm").add(
+              x.lengthTime,
+              "minutes"
+            );
+            if (moment().isAfter(timeEnd) || moment().isBefore(timeStart)) {
+              return false;
+            } else {
+              return true;
+            }
+          })
+        );
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }, []);
+
+  const columns = [
+    {
+      title: "Thông tin kỳ thi",
+      key: "infoContest",
+      width: "75%",
+    },
+    {
+      title: "Thành viên",
+      key: "participant",
+      width: "10%",
+    },
+    {
+      title: "",
+      key: "virtual_participant",
+    },
+  ];
+
+  const abc = () => {
+    console.log(contestsAreGoingOn, contestsInTheFuture, contestsHavePassed);
+  };
+
   return (
     <Layout>
       <HeaderPage currentTab={currentTab} />
@@ -33,10 +112,8 @@ export default function Contest({ currentTab }) {
           className="min-h-screen"
         >
           <div className="w-full flex mt-10">
-            <div className="w-3/4">
-              
-            </div>
-            <div className="w-1/4 justify-end"></div>
+            <button onClick={abc}>dwdw</button>
+            <Table columns={columns} />
           </div>
         </div>
       </Content>

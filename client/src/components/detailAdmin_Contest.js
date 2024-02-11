@@ -32,7 +32,6 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import moment from "moment";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat.js";
 
@@ -616,7 +615,6 @@ export default function DetailContest() {
         errorMessage();
       });
   };
-  
 
   return (
     <>
