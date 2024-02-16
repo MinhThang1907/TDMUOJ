@@ -1,12 +1,12 @@
-const contestModel = require("../models/contestModel");
+const rulesContestModel = require("../models/rulesContestModel");
 
 exports.getAll = (req, res) => {
-  contestModel
+  rulesContestModel
     .find()
     .then((data) => {
       res.status(200).json({
         success: true,
-        dataContests: data,
+        dataRulesContests: data,
       });
     })
     .catch((err) =>
@@ -16,31 +16,17 @@ exports.getAll = (req, res) => {
     );
 };
 
-exports.addContest = async (req, res) => {
-  const {
-    idContest,
-    nameContest,
-    writer,
-    timeStart,
-    lengthTime,
-    problems,
-    rules,
-  } = req.body;
-  const contest = new contestModel({
-    idContest: idContest,
-    nameContest: nameContest,
-    writer: writer,
-    timeStart: timeStart,
-    lengthTime: lengthTime,
-    problems: problems,
-    rules: rules,
+exports.addRulesContest = async (req, res) => {
+  const { content } = req.body;
+  const rulesContest = new rulesContestModel({
+    content: content,
   });
-  return contest
+  return rulesContest
     .save()
     .then((data) => {
       return res.status(201).json({
         success: true,
-        message: "Created contest successfully",
+        message: "Created rules contest successfully",
         data: data,
       });
     })
@@ -54,25 +40,19 @@ exports.addContest = async (req, res) => {
     });
 };
 
-exports.updateContest = (req, res) => {
-  const { nameContest, writer, timeStart, lengthTime, problems, rules } =
-    req.body;
-  contestModel
+exports.updateRulesContest = (req, res) => {
+  const { content } = req.body;
+  rulesContestModel
     .findOneAndUpdate(
-      { idContest: req.body.id },
+      { _id: req.body.id },
       {
-        nameContest: nameContest,
-        writer: writer,
-        timeStart: timeStart,
-        lengthTime: lengthTime,
-        problems: problems,
-        rules: rules,
+        content: content,
       }
     )
     .then(() => {
       return res.status(204).json({
         success: true,
-        message: "Update contest successfully",
+        message: "Update rules contest successfully",
       });
     })
     .catch((error) => {
@@ -85,13 +65,13 @@ exports.updateContest = (req, res) => {
     });
 };
 
-exports.deleteContest = (req, res) => {
-  contestModel
-    .findOneAndDelete({ idContest: req.body.id }, {})
+exports.deleteRulesContest = (req, res) => {
+  rulesContestModel
+    .findOneAndDelete({ _id: req.body.id }, {})
     .then(() => {
       return res.status(204).json({
         success: true,
-        message: "Delete contest successfully",
+        message: "Delete rules contest successfully",
       });
     })
     .catch((error) => {

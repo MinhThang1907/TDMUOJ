@@ -4,6 +4,7 @@ import {
   SearchOutlined,
   PlusOutlined,
   ExclamationCircleOutlined,
+  ExceptionOutlined,
 } from "@ant-design/icons";
 import {
   Input,
@@ -34,6 +35,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat.js";
+import { Editor } from "primereact/editor";
 
 import axios from "axios";
 
@@ -423,9 +425,80 @@ export default function DetailContest() {
       ),
     },
   ];
+  const columnRulesTemplate = [
+    {
+      title: "Nội dung",
+      key: "content",
+      width: "80%",
+      render: (item, _, index) => {
+        if (item.edit) {
+          return (
+            <Editor
+              value={item.content}
+              onTextChange={async (e) => {
+                let arr = [];
+                await dataRulesContestCopy.forEach((element, id) => {
+                  if (id === index) {
+                    arr.push({
+                      ...element,
+                      content: e.htmlValue,
+                    });
+                  } else {
+                    arr.push(element);
+                  }
+                });
+                setDataRulesContestCopy(arr);
+              }}
+              style={{ height: "200px" }}
+            />
+          );
+        } else {
+          return <div dangerouslySetInnerHTML={{ __html: item.content }}></div>;
+        }
+      },
+    },
+    {
+      title: "Hành động",
+      key: "action",
+      align: "center",
+      render: (_, __, index) => (
+        <Space>
+          {!_.edit && (
+            <Button
+              type="primary"
+              danger
+              onClick={() => deleteRulesContest({ id: index })}
+              className="w-full justify-center items-center flex"
+            >
+              Xóa
+            </Button>
+          )}
+          {_.edit ? (
+            <Button
+              type="dashed"
+              onClick={() => disableEditRulesContest({ id: index })}
+              className="w-full justify-center items-center flex"
+            >
+              Xong
+            </Button>
+          ) : (
+            <Button
+              type="dashed"
+              onClick={() => enableEditRulesContest({ id: index })}
+              className="w-full justify-center items-center flex"
+            >
+              Chỉnh sửa
+            </Button>
+          )}
+        </Space>
+      ),
+    },
+  ];
 
   const [dataContests, setDataContests] = useState([]);
   const [dataProblems, setDataProblems] = useState([]);
+  const [dataRulesContest, setDataRulesContest] = useState([]);
+  const [dataRulesContestCopy, setDataRulesContestCopy] = useState([]);
   const [allUser, setAllUser] = useState([]);
 
   const [idContest, setIdContest] = useState("");
@@ -434,8 +507,11 @@ export default function DetailContest() {
   const [timeStart, setTimeStart] = useState("");
   const [lengthTime, setLengthTime] = useState(0);
   const [problems, setProblems] = useState([]);
+  const [rules, setRules] = useState("");
   const [optionsProblems, setOptionsProblems] = useState([]);
   const [searchProblem, setSearchProblem] = useState("");
+  const [valueAddRulesContest, setValueAddRulesContest] = useState("");
+  const [optionsRulesContest, setOptionsRulesContest] = useState([]);
 
   const clearData = () => {
     setNameContest("");
@@ -443,6 +519,7 @@ export default function DetailContest() {
     setTimeStart(dayjs().format("DD/MM/YYYY HH:mm"));
     setLengthTime(0);
     setProblems([]);
+    setRules("");
     setSearchProblem("");
   };
 
@@ -484,6 +561,23 @@ export default function DetailContest() {
         console.log(error);
       });
   };
+  const fetchRulesContest = () => {
+    axios
+      .get(env.API_URL + "/rulesContest", {})
+      .then(async (response) => {
+        let arr = [];
+        await response.data.dataRulesContests.forEach((element) => {
+          arr.push({
+            ...element,
+            edit: false,
+          });
+        });
+        setDataRulesContest(arr.reverse());
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
 
   const getAllUser = () => {
     axios
@@ -520,12 +614,23 @@ export default function DetailContest() {
   useEffect(() => {
     fetchDataContests();
     fetchDataProblems();
+    fetchRulesContest();
     getAllUser();
   }, []);
 
   const [isModalAddContest, setIsModalAddContest] = useState(false);
-  const showModalAddContest = () => {
+  const showModalAddContest = async () => {
     clearData();
+    let arr = [];
+    await dataRulesContest.forEach((element) => {
+      arr.push({
+        label: (
+          <div dangerouslySetInnerHTML={{ __html: element.content }}></div>
+        ),
+        value: element.content,
+      });
+    });
+    setOptionsRulesContest(arr);
     setIsModalAddContest(true);
   };
   const handleCancelModalAddContest = () => {
@@ -548,6 +653,18 @@ export default function DetailContest() {
   };
   const handleCancelModalDetailContest = () => {
     setIsModalDetailContest(false);
+  };
+
+  const [isModalRulesTemplate, setIsModalRulesTemplate] = useState(false);
+  const showModalRulesTemplate = () => {
+    setDataRulesContestCopy(dataRulesContest);
+    setIsModalRulesTemplate(true);
+  };
+  const handleCancelModalRulesTemplate = async () => {
+    await fetchRulesContest();
+    setDataRulesContestCopy([]);
+    setValueAddRulesContest("");
+    setIsModalRulesTemplate(false);
   };
 
   const addContest = () => {
@@ -614,6 +731,121 @@ export default function DetailContest() {
         console.log(error);
         errorMessage();
       });
+  };
+
+  const addRulesContest = async () => {
+    let arr = [];
+    await dataRulesContestCopy.forEach((element) => {
+      arr.push(element);
+    });
+    arr.push({
+      _id: shortid.generate(),
+      content: valueAddRulesContest,
+    });
+    setDataRulesContestCopy(arr);
+    setValueAddRulesContest("");
+  };
+
+  const deleteRulesContest = async ({ id }) => {
+    modal.confirm({
+      title: "XÁC NHẬN",
+      icon: <ExclamationCircleOutlined />,
+      content: "Xác nhận xóa mẫu này",
+      okText: "Xóa",
+      cancelText: "Hủy",
+      okType: "danger",
+      onOk: async () => {
+        let arr = [];
+        await dataRulesContestCopy.forEach((element, index) => {
+          if (id !== index) {
+            arr.push(element);
+          }
+        });
+        setDataRulesContestCopy(arr);
+      },
+    });
+  };
+  const enableEditRulesContest = async ({ id }) => {
+    let arr = [];
+    await dataRulesContestCopy.forEach((element, index) => {
+      if (id !== index) {
+        arr.push(element);
+      } else {
+        arr.push({
+          ...element,
+          edit: true,
+        });
+      }
+    });
+    setDataRulesContestCopy(arr);
+  };
+  const disableEditRulesContest = async ({ id }) => {
+    let arr = [];
+    await dataRulesContestCopy.forEach((element, index) => {
+      if (id !== index) {
+        arr.push(element);
+      } else {
+        arr.push({
+          ...element,
+          edit: false,
+        });
+      }
+    });
+    setDataRulesContestCopy(arr);
+  };
+
+  const filterUpdateRules = async () => {
+    await dataRulesContestCopy.forEach(async (element) => {
+      if (dataRulesContest.filter((x) => x._id === element._id).length > 0) {
+        await axios
+          .put(env.API_URL + "/update-rulesContest", {
+            id: element._id,
+            content: element.content,
+          })
+          .then(function (response) {})
+          .catch(function (error) {
+            console.log(error);
+          });
+      } else {
+        await axios
+          .post(env.API_URL + "/rulesContest", {
+            content: element.content,
+          })
+          .then(function (response) {})
+          .catch(function (error) {
+            console.log(error);
+          });
+      }
+    });
+    await dataRulesContest.forEach(async (element) => {
+      if (
+        dataRulesContestCopy.filter((x) => x._id === element._id).length === 0
+      ) {
+        await axios
+          .put(env.API_URL + "/delete-rulesContest", {
+            id: element._id,
+          })
+          .then(function (response) {})
+          .catch(function (error) {
+            console.log(error);
+          });
+      }
+    });
+    successMessage();
+    handleCancelModalRulesTemplate();
+  };
+  const updateRulesContest = () => {
+    modal.confirm({
+      title: "XÁC NHẬN",
+      icon: <ExclamationCircleOutlined />,
+      content: "Xác nhận cập nhật các mẫu hiện tại",
+      okText: "Xác nhận",
+      cancelText: "Hủy",
+      okType: "dashed",
+      onOk() {
+        filterUpdateRules();
+      },
+    });
   };
 
   return (
@@ -692,6 +924,28 @@ export default function DetailContest() {
           <div className="flex flex-wrap -mx-3 mb-6">
             <div className="w-full px-3">
               <label className="block uppercase tracking-wide text-gray-700 text-base font-bold mb-2">
+                Thể lệ cuộc thi
+              </label>
+              <label className="block tracking-wide text-gray-700 text-base font-bold mb-2">
+                Chọn mẫu hoặc tự viết
+              </label>
+              <Select
+                className="w-full mb-2"
+                placeholder="Chọn mẫu"
+                options={optionsRulesContest}
+                value={"Chọn mẫu"}
+                onChange={(e) => setRules(e)}
+              />
+              <Editor
+                value={rules}
+                onTextChange={(e) => setRules(e.htmlValue)}
+                style={{ height: "320px" }}
+              />
+            </div>
+          </div>
+          <div className="flex flex-wrap -mx-3 mb-6">
+            <div className="w-full px-3">
+              <label className="block uppercase tracking-wide text-gray-700 text-base font-bold mb-2">
                 Các vấn đề
               </label>
               {problems.length > 0 ? (
@@ -712,31 +966,34 @@ export default function DetailContest() {
                         },
                       }}
                       rowKey="idProblem"
+                      pagination={false}
                       columns={columnProblems}
                       dataSource={problems}
                       footer={() => (
                         <>
-                          <Space>
-                            <div className="flex flex-wrap -mx-3">
-                              <div className="w-full px-3">
-                                <Button
-                                  icon={<PlusOutlined />}
-                                  onClick={addProblem}
-                                />
+                          {problems.length < 26 && (
+                            <Space>
+                              <div className="flex flex-wrap -mx-3">
+                                <div className="w-full px-3">
+                                  <Button
+                                    icon={<PlusOutlined />}
+                                    onClick={addProblem}
+                                  />
+                                </div>
                               </div>
-                            </div>
-                            <Select
-                              className="w-[500px]"
-                              showSearch
-                              placeholder="Tìm kiếm vấn đề"
-                              filterOption={(input, option) =>
-                                (option?.label ?? "").includes(input)
-                              }
-                              value={searchProblem}
-                              onChange={(e) => setSearchProblem(e)}
-                              options={optionsProblems}
-                            />
-                          </Space>
+                              <Select
+                                className="w-[500px]"
+                                showSearch
+                                placeholder="Tìm kiếm vấn đề"
+                                filterOption={(input, option) =>
+                                  (option?.label ?? "").includes(input)
+                                }
+                                value={searchProblem}
+                                onChange={(e) => setSearchProblem(e)}
+                                options={optionsProblems}
+                              />
+                            </Space>
+                          )}
                         </>
                       )}
                     />
@@ -883,27 +1140,29 @@ export default function DetailContest() {
                       dataSource={problems}
                       footer={() => (
                         <>
-                          <Space>
-                            <div className="flex flex-wrap -mx-3">
-                              <div className="w-full px-3">
-                                <Button
-                                  icon={<PlusOutlined />}
-                                  onClick={addProblem}
-                                />
+                          {problems.length < 26 && (
+                            <Space>
+                              <div className="flex flex-wrap -mx-3">
+                                <div className="w-full px-3">
+                                  <Button
+                                    icon={<PlusOutlined />}
+                                    onClick={addProblem}
+                                  />
+                                </div>
                               </div>
-                            </div>
-                            <Select
-                              className="w-[500px]"
-                              showSearch
-                              placeholder="Tìm kiếm vấn đề"
-                              filterOption={(input, option) =>
-                                (option?.label ?? "").includes(input)
-                              }
-                              value={searchProblem}
-                              onChange={(e) => setSearchProblem(e)}
-                              options={optionsProblems}
-                            />
-                          </Space>
+                              <Select
+                                className="w-[500px]"
+                                showSearch
+                                placeholder="Tìm kiếm vấn đề"
+                                filterOption={(input, option) =>
+                                  (option?.label ?? "").includes(input)
+                                }
+                                value={searchProblem}
+                                onChange={(e) => setSearchProblem(e)}
+                                options={optionsProblems}
+                              />
+                            </Space>
+                          )}
                         </>
                       )}
                     />
@@ -962,7 +1221,51 @@ export default function DetailContest() {
         footer={null}
         className="justify-center w-full"
       ></Modal>
+      <Modal
+        closeIcon={null}
+        open={isModalRulesTemplate}
+        onCancel={handleCancelModalRulesTemplate}
+        footer={null}
+        className="justify-center w-[800px] flex"
+      >
+        <div className="w-[800px]">
+          <Table
+            columns={columnRulesTemplate}
+            dataSource={dataRulesContestCopy}
+            footer={(data) => (
+              <>
+                <Space>
+                  <div className="flex flex-wrap -mx-3">
+                    <div className="w-full px-3">
+                      <Button
+                        icon={<PlusOutlined />}
+                        onClick={addRulesContest}
+                        title="Thêm mẫu"
+                      />
+                    </div>
+                  </div>
+                  <Editor
+                    value={valueAddRulesContest}
+                    onTextChange={(e) => setValueAddRulesContest(e.htmlValue)}
+                    style={{ height: "200px" }}
+                  />
+                </Space>
+              </>
+            )}
+          />
+          <div className="flex items-center justify-center">
+            <Button size="large" onClick={updateRulesContest}>
+              Cập nhật
+            </Button>
+          </div>
+        </div>
+      </Modal>
       <FloatButton.Group>
+        <FloatButton
+          tooltip={<div>Mẫu thể lệ</div>}
+          icon={<ExceptionOutlined />}
+          onClick={showModalRulesTemplate}
+        />
         <FloatButton
           tooltip={<div>Thêm cuộc thi mới</div>}
           icon={<PlusOutlined />}

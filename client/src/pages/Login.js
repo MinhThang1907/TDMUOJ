@@ -101,6 +101,11 @@ export default function Login() {
                         name="nombre"
                         className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
                         onChange={(e) => setUsername(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            loginAccount();
+                          }
+                        }}
                       />
                     </div>
                     <div className="mb-4">
@@ -116,6 +121,11 @@ export default function Login() {
                         name="password"
                         className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
                         onChange={(e) => setPassword(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            loginAccount();
+                          }
+                        }}
                       />
                     </div>
                     {result && (

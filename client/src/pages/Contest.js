@@ -73,7 +73,7 @@ export default function Contest({ currentTab }) {
       {
         title: "Thông tin kỳ thi",
         key: "infoContest",
-        width: "75%",
+        width: "80%",
         render: (item) => {
           let timeEnd = moment(item.timeStart, "DD/MM/YYYY HH:mm").add(
             item.lengthTime,
@@ -85,8 +85,12 @@ export default function Contest({ currentTab }) {
           }
           return (
             <div>
-              <Link className="text-cyan-500 text-xl">{item.nameContest}</Link>{" "}
-              {/*Link to detail contest*/}
+              <Link
+                to={"/contest/".concat(item.idContest)}
+                className="text-cyan-500 text-xl"
+              >
+                {item.nameContest}
+              </Link>
               <div>
                 Kết thúc trong{" "}
                 {timeEnd.diff(current, "days") !== 0 && (
@@ -162,22 +166,14 @@ export default function Contest({ currentTab }) {
       {
         title: "Thành viên",
         key: "participant",
-        width: "10%",
         align: "center",
         render: (item) => <Link>{item.participants.length}</Link>, //link to ranking,
-      },
-      {
-        title: "Tham gia",
-        key: "join",
-        align: "center",
-        render: (item) => <Button>Tham gia</Button>,
       },
     ]);
     setColumnsContestInTheFuture([
       {
         title: "Thông tin kỳ thi",
         key: "infoContest",
-        width: "75%",
         render: (item) => {
           let timeStart = moment(item.timeStart, "DD/MM/YYYY HH:mm");
           let current = moment();
@@ -186,7 +182,12 @@ export default function Contest({ currentTab }) {
           }
           return (
             <div>
-              <Link className="text-cyan-500 text-xl">{item.nameContest}</Link>{" "}
+              <Link
+                to={"/contest/".concat(item.idContest)}
+                className="text-cyan-500 text-xl"
+              >
+                {item.nameContest}
+              </Link>{" "}
               {/*Link to detail contest*/}
               <div>
                 Bắt đầu trong{" "}
@@ -265,19 +266,6 @@ export default function Contest({ currentTab }) {
           );
         },
       },
-      {
-        title: "Thành viên",
-        key: "participant",
-        width: "10%",
-        align: "center",
-        render: (item) => <Link>{item.participants.length}</Link>, //link to list register,
-      },
-      {
-        title: "Tham gia",
-        key: "join",
-        align: "center",
-        render: (item) => <Button>Đăng ký</Button>,
-      },
     ]);
     setColumnsContestHavePassed([
       {
@@ -287,7 +275,12 @@ export default function Contest({ currentTab }) {
         render: (item) => {
           return (
             <div>
-              <Link className="text-cyan-500 text-xl">{item.nameContest}</Link>{" "}
+              <Link
+                to={"/contest/".concat(item.idContest)}
+                className="text-cyan-500 text-xl"
+              >
+                {item.nameContest}
+              </Link>{" "}
               {/*Link to detail contest*/}
               <div className="mt-2 font-normal text-gray-400 text-base">
                 Bắt đầu thi: {item.timeStart}

@@ -28,5 +28,9 @@ const contestSchema = new mongoose.Schema({
     type: Array,
     default: [],
   },
+  rules: {
+    type: String,
+    default: "",
+  },
 });
 module.exports = mongoose.model("contest", contestSchema);

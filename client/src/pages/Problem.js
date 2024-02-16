@@ -24,12 +24,17 @@ import { Link } from "react-router-dom";
 
 const { Content } = Layout;
 
-export default function Problem({
-  currentTab,
-  hiddenTag,
-  setHiddenTag,
-  setInfoProblem,
-}) {
+export default function Problem({ currentTab, setInfoProblem }) {
+  const [hiddenTag, setHiddenTag] = useState(
+    localStorage.getItem("hiddenTagProblem")
+      ? JSON.parse(localStorage.getItem("hiddenTagProblem"))
+      : null
+  );
+  const [hiddenAcceptedProblem, setHiddenAcceptedProblem] = useState(
+    localStorage.getItem("hiddenAcceptedProblem")
+      ? JSON.parse(localStorage.getItem("hiddenAcceptedProblem"))
+      : null
+  );
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
@@ -215,7 +220,7 @@ export default function Problem({
   ];
   const [dataProblem, setDataProblem] = useState([]);
   const [dataTag, setDataTag] = useState([]);
-  const fetchDataProblem = () => {
+  const fetchDataProblem = ({ state }) => {
     axios
       .get(env.API_URL + "/problems", {})
       .then(function (responseProblem) {
@@ -224,14 +229,29 @@ export default function Problem({
           .then(function (responseSubmission) {
             let arr = [];
             responseProblem.data.dataProblems.forEach((ele) => {
-              arr.push({
-                ...ele,
-                key: ele.idProblem,
-                numberSolved: responseSubmission.data.dataSubmissions.filter(
-                  (x) =>
-                    x.idProblem === ele.idProblem && x.status === "Accepted"
-                ).length,
-              });
+              if (state) {
+                if (ele.solved.filter((x) => x === user._id).length === 0) {
+                  arr.push({
+                    ...ele,
+                    key: ele.idProblem,
+                    numberSolved:
+                      responseSubmission.data.dataSubmissions.filter(
+                        (x) =>
+                          x.idProblem === ele.idProblem &&
+                          x.status === "Accepted"
+                      ).length,
+                  });
+                }
+              } else {
+                arr.push({
+                  ...ele,
+                  key: ele.idProblem,
+                  numberSolved: responseSubmission.data.dataSubmissions.filter(
+                    (x) =>
+                      x.idProblem === ele.idProblem && x.status === "Accepted"
+                  ).length,
+                });
+              }
             });
             setDataProblem(arr.reverse());
           })
@@ -261,14 +281,13 @@ export default function Problem({
       });
   };
   useEffect(() => {
-    fetchDataProblem();
+    fetchDataProblem({ state: hiddenAcceptedProblem });
     fetchTagProblem();
   }, []);
 
   const [startDifficulty, setStartDifficulty] = useState(100);
   const [endDifficulty, setEndDifficulty] = useState(1000);
   const [tags, setTags] = useState([]);
-  const [hiddenAcceptedProblem, setHiddenAcceptedProblem] = useState(false);
 
   const checkExist = ({ currentTags, tags }) => {
     let count = 0;
@@ -283,7 +302,7 @@ export default function Problem({
     startDifficulty,
     endDifficulty,
     tags,
-    hiddenAcceptedProblem,
+    hiddenAccepted,
   }) => {
     axios
       .get(env.API_URL + "/problems", {})
@@ -297,7 +316,7 @@ export default function Problem({
                   x.difficulty >= startDifficulty &&
                   x.difficulty <= endDifficulty &&
                   checkExist({ currentTags: x.tags, tags: tags }) &&
-                  (hiddenAcceptedProblem
+                  (hiddenAccepted
                     ? x.solved.filter((userAC) => userAC === user._id).length >
                       0
                       ? false
@@ -334,7 +353,7 @@ export default function Problem({
       startDifficulty: value[0],
       endDifficulty: value[1],
       tags: tags,
-      hiddenAcceptedProblem: hiddenAcceptedProblem,
+      hiddenAccepted: hiddenAcceptedProblem,
     });
   };
 
@@ -344,19 +363,21 @@ export default function Problem({
       startDifficulty: startDifficulty,
       endDifficulty: endDifficulty,
       tags: value,
-      hiddenAcceptedProblem: hiddenAcceptedProblem,
+      hiddenAccepted: hiddenAcceptedProblem,
     });
   };
   const changeStateHiddenTag = (e) => {
+    localStorage.setItem("hiddenTagProblem", e.target.checked);
     setHiddenTag(e.target.checked);
   };
   const changeStatehiddenAccepted = (e) => {
+    localStorage.setItem("hiddenAcceptedProblem", e.target.checked);
     setHiddenAcceptedProblem(e.target.checked);
     fetchFilter({
       startDifficulty: startDifficulty,
       endDifficulty: endDifficulty,
       tags: tags,
-      hiddenAcceptedProblem: e.target.checked,
+      hiddenAccepted: e.target.checked,
     });
   };
 
@@ -425,12 +446,18 @@ export default function Problem({
                       />
                     </div>
                     <div className="w-full px-3 pt-3">
-                      <Checkbox onChange={changeStateHiddenTag}>
+                      <Checkbox
+                        onChange={changeStateHiddenTag}
+                        checked={hiddenTag}
+                      >
                         Ẩn thẻ tất cả bài tập
                       </Checkbox>
                     </div>
                     <div className="w-full px-3">
-                      <Checkbox onChange={changeStatehiddenAccepted}>
+                      <Checkbox
+                        onChange={changeStatehiddenAccepted}
+                        checked={hiddenAcceptedProblem}
+                      >
                         Ẩn những bài đã AC
                       </Checkbox>
                     </div>

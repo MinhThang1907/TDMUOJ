@@ -11,6 +11,7 @@ import Submit from "./components/submit";
 import Submission from "./pages/Submissions.js";
 import Profile from "./pages/Profile.js";
 import Contest from "./pages/Contest.js";
+import DetailContest from "./components/detailContest.js";
 import Member from "./pages/Member.js";
 import Education from "./pages/Education.js";
 import { useEffect, useState } from "react";
@@ -19,7 +20,6 @@ import axios from "axios";
 import * as env from "./env.js";
 
 function App() {
-  const [hiddenTag, setHiddenTag] = useState(false);
   const [infoProblem, setInfoProblem] = useState({});
 
   // const [answer, setAnswer] = useState({});
@@ -284,22 +284,13 @@ function App() {
         <Route
           path="/problems"
           element={
-            <Problem
-              currentTab="problems"
-              hiddenTag={hiddenTag}
-              setHiddenTag={setHiddenTag}
-              setInfoProblem={setInfoProblem}
-            />
+            <Problem currentTab="problems" setInfoProblem={setInfoProblem} />
           }
         ></Route>
         <Route
           path="/problems/:idProblem"
           element={
-            <DetailProblem
-              currentTab="problems"
-              hiddenTag={hiddenTag}
-              infoProblem={infoProblem}
-            />
+            <DetailProblem currentTab="problems" infoProblem={infoProblem} />
           }
         ></Route>
         <Route
@@ -318,6 +309,10 @@ function App() {
         <Route
           path="/contest"
           element={<Contest currentTab="contest" />}
+        ></Route>
+        <Route
+          path="/contest/:idContest"
+          element={<DetailContest currentTab="contest" />}
         ></Route>
         <Route path="/users" element={<Member currentTab="users" />}></Route>
         <Route

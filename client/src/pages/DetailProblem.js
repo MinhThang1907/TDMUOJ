@@ -21,7 +21,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 const { Content } = Layout;
 
-export default function DetailProblem({ currentTab, hiddenTag, infoProblem }) {
+export default function DetailProblem({ currentTab }) {
   const navigate = useNavigate();
   const [api, contextHolder] = notification.useNotification();
   const openNotificationWithIcon = (type) => {
@@ -38,6 +38,9 @@ export default function DetailProblem({ currentTab, hiddenTag, infoProblem }) {
   // const user = localStorage.getItem("dataUser")
   //   ? JSON.parse(localStorage.getItem("dataUser"))
   //   : null;
+  const hiddenTag = localStorage.getItem("hiddenTagProblem")
+    ? JSON.parse(localStorage.getItem("hiddenTagProblem"))
+    : null;
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -191,7 +194,7 @@ export default function DetailProblem({ currentTab, hiddenTag, infoProblem }) {
                     ghost
                     className="w-1/2"
                     onClick={() =>
-                      navigate("/submit/".concat(infoProblem.idProblem))
+                      navigate("/submit/".concat(problem.idProblem))
                     }
                   >
                     Gửi bài giải
@@ -204,10 +207,14 @@ export default function DetailProblem({ currentTab, hiddenTag, infoProblem }) {
                       </h4>
                     </div>
                     <div className="w-full overflow-x-scroll px-4 py-4 md:overflow-x-hidden">
-                      {infoProblem.tags &&
-                        infoProblem.tags.map((item, index) => (
+                      {hiddenTag ? (
+                        <Tag color="cyan">Đã che</Tag>
+                      ) : (
+                        problem.tags &&
+                        problem.tags.map((item, index) => (
                           <Tag color="cyan">{item}</Tag>
-                        ))}
+                        ))
+                      )}
                     </div>
                   </div>
                   <div className="mt-5 relative flex w-11/12 flex-col rounded-[10px] border-[1px] border-gray-200 bg-white bg-clip-border shadow-md shadow-[#F3F3F3]">
@@ -217,8 +224,10 @@ export default function DetailProblem({ currentTab, hiddenTag, infoProblem }) {
                       </h4>
                     </div>
                     <div className="w-full overflow-x-scroll px-4 py-4 md:overflow-x-hidden">
-                      {infoProblem.difficulty && (
-                        <Tag color="red">{infoProblem.difficulty}</Tag>
+                      {hiddenTag ? (
+                        <Tag color="cyan">Đã che</Tag>
+                      ) : (
+                        <Tag color="red">{problem.difficulty}</Tag>
                       )}
                     </div>
                   </div>

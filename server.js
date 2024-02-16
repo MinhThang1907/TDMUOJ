@@ -16,6 +16,7 @@ const problem = require("./routes/problemRoute");
 const tagProblem = require("./routes/tagProblemRoute");
 const submission = require("./routes/submissionRoute");
 const contest = require("./routes/contestRoute");
+const rulesContest = require("./routes/rulesContestRoute");
 
 //using
 app.use(account);
@@ -24,6 +25,7 @@ app.use(problem);
 app.use(tagProblem);
 app.use(submission);
 app.use(contest);
+app.use(rulesContest);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
