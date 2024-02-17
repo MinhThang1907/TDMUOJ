@@ -1,5 +1,14 @@
 import { React, useState, useEffect } from "react";
-import { Layout, theme, Table, Tabs, Divider, Button, Input } from "antd";
+import {
+  Layout,
+  theme,
+  Table,
+  Tabs,
+  Divider,
+  Button,
+  Input,
+  Calendar,
+} from "antd";
 import { CalendarOutlined } from "@ant-design/icons";
 import axios from "axios";
 import moment from "moment";
@@ -23,41 +32,123 @@ export default function Contest({ currentTab }) {
   const [contestsAreGoingOn, setContestsAreGoingOn] = useState([]);
   const [contestsInTheFuture, setContestsInTheFuture] = useState([]);
   const [contestsHavePassed, setContestsHavePassed] = useState([]);
+  const [allContest, setAllContest] = useState([]);
   const fetchDataContests = () => {
     axios
       .get(env.API_URL + "/contest", {})
       .then(async (responseContest) => {
-        setContestsHavePassed(
-          await responseContest.data.dataContests.filter((x) =>
-            moment().isAfter(
-              moment(x.timeStart, "DD/MM/YYYY HH:mm").add(
-                x.lengthTime,
-                "minutes"
+        setAllContest(
+          await responseContest.data.dataContests.sort(function (a, b) {
+            if (
+              moment(a.timeStart, "DD/MM/YYYY HH:mm").isBefore(
+                moment(b.timeStart, "DD/MM/YYYY HH:mm")
               )
-            )
-          )
+            ) {
+              return -1;
+            } else if (
+              moment(a.timeStart, "DD/MM/YYYY HH:mm").isAfter(
+                moment(b.timeStart, "DD/MM/YYYY HH:mm")
+              )
+            ) {
+              return 1;
+            } else {
+              return 0;
+            }
+          })
         );
-        setContestsInTheFuture(
-          await responseContest.data.dataContests.filter((x) =>
-            moment().isBefore(moment(x.timeStart, "DD/MM/YYYY HH:mm"))
-          )
-        );
-        setContestsAreGoingOn(
-          await responseContest.data.dataContests.filter(
-            (x) =>
-              moment().isSameOrAfter(moment(x.timeStart, "DD/MM/YYYY HH:mm")) &&
-              moment().isSameOrBefore(
+        setContestsHavePassed(
+          await responseContest.data.dataContests
+            .filter((x) =>
+              moment().isAfter(
                 moment(x.timeStart, "DD/MM/YYYY HH:mm").add(
                   x.lengthTime,
                   "minutes"
                 )
               )
-          )
+            )
+            .sort(function (a, b) {
+              if (
+                moment(a.timeStart, "DD/MM/YYYY HH:mm").isBefore(
+                  moment(b.timeStart, "DD/MM/YYYY HH:mm")
+                )
+              ) {
+                return 1;
+              } else if (
+                moment(a.timeStart, "DD/MM/YYYY HH:mm").isAfter(
+                  moment(b.timeStart, "DD/MM/YYYY HH:mm")
+                )
+              ) {
+                return -1;
+              } else {
+                return 0;
+              }
+            })
+        );
+        setContestsInTheFuture(
+          await responseContest.data.dataContests
+            .filter((x) =>
+              moment().isBefore(moment(x.timeStart, "DD/MM/YYYY HH:mm"))
+            )
+            .sort(function (a, b) {
+              if (
+                moment(a.timeStart, "DD/MM/YYYY HH:mm").isBefore(
+                  moment(b.timeStart, "DD/MM/YYYY HH:mm")
+                )
+              ) {
+                return -1;
+              } else if (
+                moment(a.timeStart, "DD/MM/YYYY HH:mm").isAfter(
+                  moment(b.timeStart, "DD/MM/YYYY HH:mm")
+                )
+              ) {
+                return 1;
+              } else {
+                return 0;
+              }
+            })
+        );
+        setContestsAreGoingOn(
+          await responseContest.data.dataContests
+            .filter(
+              (x) =>
+                moment().isSameOrAfter(
+                  moment(x.timeStart, "DD/MM/YYYY HH:mm")
+                ) &&
+                moment().isSameOrBefore(
+                  moment(x.timeStart, "DD/MM/YYYY HH:mm").add(
+                    x.lengthTime,
+                    "minutes"
+                  )
+                )
+            )
+            .sort(function (a, b) {
+              if (
+                moment(a.timeStart, "DD/MM/YYYY HH:mm").isBefore(
+                  moment(b.timeStart, "DD/MM/YYYY HH:mm")
+                )
+              ) {
+                return -1;
+              } else if (
+                moment(a.timeStart, "DD/MM/YYYY HH:mm").isAfter(
+                  moment(b.timeStart, "DD/MM/YYYY HH:mm")
+                )
+              ) {
+                return 1;
+              } else {
+                return 0;
+              }
+            })
         );
       })
       .catch(function (error) {
         console.log(error);
       });
+  };
+  const fixUI = async () => {
+    let switchMonthYear = await document.getElementsByClassName(
+      "ant-picker-calendar-mode-switch"
+    );
+    switchMonthYear[0].remove();
   };
   useEffect(() => {
     fetchDataContests();
@@ -328,6 +419,9 @@ export default function Contest({ currentTab }) {
   const [key, setKey] = useState("contests");
   const onChange = (key) => {
     setKey(key);
+    if (key === "calendar") {
+      fixUI();
+    }
   };
   const searchContest = async ({ value }) => {
     axios
@@ -348,6 +442,41 @@ export default function Contest({ currentTab }) {
       .catch(function (error) {
         console.log(error);
       });
+  };
+  const getListData = (value) => {
+    let checkExist = allContest.filter(
+      (x) =>
+        parseInt(moment(x.timeStart, "DD/MM/YYYY HH:mm").format("D")) ===
+          value.date() &&
+        parseInt(moment(x.timeStart, "DD/MM/YYYY HH:mm").format("M")) - 1 ===
+          value.month() &&
+        parseInt(moment(x.timeStart, "DD/MM/YYYY HH:mm").format("YYYY")) ===
+          value.year()
+    );
+    return checkExist;
+  };
+  const dateCellRender = (value) => {
+    const data = getListData(value);
+    if (data.length > 0) {
+      return (
+        <div>
+          {data.map((item, index) => (
+            <Link
+              to={"/contest/".concat(item.idContest)}
+              title={item.nameContest}
+            >
+              <div className="font-bold">{item.nameContest}</div>
+            </Link>
+          ))}
+        </div>
+      );
+    } else {
+      return <div></div>;
+    }
+  };
+  const cellRender = (current, info) => {
+    if (info.type === "date") return dateCellRender(current);
+    return info.originNode;
   };
   return (
     <Layout>
@@ -434,6 +563,7 @@ export default function Contest({ currentTab }) {
               )}
             </div>
           )}
+          {key === "calendar" && <Calendar cellRender={cellRender} />}
         </div>
       </Content>
       <FooterPage />
