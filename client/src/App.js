@@ -7,11 +7,10 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Problem from "./pages/Problem";
 import DetailProblem from "./pages/DetailProblem";
-import Submit from "./components/submit";
 import Submission from "./pages/Submissions.js";
 import Profile from "./pages/Profile.js";
 import Contest from "./pages/Contest.js";
-import DetailContest from "./components/detailContest.js";
+import DetailContest from "./pages/DetailContest.js";
 import Member from "./pages/Member.js";
 import Education from "./pages/Education.js";
 import { useEffect, useState } from "react";
@@ -278,7 +277,7 @@ function App() {
   // }, []);
   return (
     <div>
-      {/* <button onClick={grading}>bdwdwjdnww</button> */}
+      <button onClick={grading}>bdwdwjdnww</button>
       <Routes>
         <Route path="/test" element={<Test />}></Route>
         <Route
@@ -292,10 +291,6 @@ function App() {
           element={
             <DetailProblem currentTab="problems" infoProblem={infoProblem} />
           }
-        ></Route>
-        <Route
-          path="/submit/:idProblem"
-          element={<Submit currentTab="problems" infoProblem={infoProblem} />}
         ></Route>
         <Route
           path="/submissions"
