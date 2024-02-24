@@ -14,19 +14,19 @@ import moment from "moment";
 export default function DetailProblem({ idProblemFromContest, idContest }) {
   const navigate = useNavigate();
   const [api, contextHolder] = notification.useNotification();
-  const openNotificationWithIcon = (type) => {
+  const openSuccessNotificationWithIcon = ({ message }) => {
     // console.log(type, api[type]);
     let placement = "bottomRight";
     api.success({
-      message: "Đã copy",
+      message: message,
       placement,
     });
   };
-  const openWarningWithIcon = (type) => {
+  const openWarningNotificationWithIcon = ({ message }) => {
     // console.log(type, api[type]);
     let placement = "bottomRight";
     api.error({
-      message: "Chưa chọn file",
+      message: message,
       placement,
     });
   };
@@ -96,7 +96,9 @@ export default function DetailProblem({ idProblemFromContest, idContest }) {
 
   const SubmitFile = () => {
     if (code === "") {
-      openWarningWithIcon();
+      openWarningNotificationWithIcon({
+        message: "Vui lòng chọn file thích hợp",
+      });
     } else {
       axios
         .post(env.API_URL + "/submission", {
@@ -174,7 +176,9 @@ export default function DetailProblem({ idProblemFromContest, idContest }) {
                         type="dashed"
                         className="absolute top-0 right-0"
                         onClick={() =>
-                          openNotificationWithIcon("success", "bottomRight")
+                          openSuccessNotificationWithIcon({
+                            message: "Đã copy",
+                          })
                         }
                       >
                         Copy
@@ -194,7 +198,11 @@ export default function DetailProblem({ idProblemFromContest, idContest }) {
                         icon={<CopyOutlined />}
                         type="dashed"
                         className="absolute top-0 right-0"
-                        onClick={() => openNotificationWithIcon("success")}
+                        onClick={() =>
+                          openSuccessNotificationWithIcon({
+                            message: "Đã copy",
+                          })
+                        }
                       >
                         Copy
                       </Button>
@@ -224,35 +232,40 @@ export default function DetailProblem({ idProblemFromContest, idContest }) {
                   <Input
                     type="file"
                     onChange={(e) => {
-                      let fileName = e.target.files[0].name.split(".");
-                      if (fileName[fileName.length - 1] === "cpp") {
-                        setLang(54);
-                        setNameLanguage("C++");
-                      } else if (fileName[fileName.length - 1] === "c") {
-                        setLang(50);
-                        setNameLanguage("C");
-                      } else if (fileName[fileName.length - 1] === "java") {
-                        setLang(62);
-                        setNameLanguage("Java");
-                      } else if (fileName[fileName.length - 1] === "py") {
-                        setLang(71);
-                        setNameLanguage("Python");
-                      } else if (fileName[fileName.length - 1] === "cs") {
-                        setLang(51);
-                        setNameLanguage("C#");
-                      } else if (fileName[fileName.length - 1] === "js") {
-                        setLang(63);
-                        setNameLanguage("JavaScript");
-                      } else {
-                        alert("File không hợp lệ");
-                        return;
+                      if (e.target.files.length > 0) {
+                        let fileName = e.target.files[0].name.split(".");
+                        if (fileName[fileName.length - 1] === "cpp") {
+                          setLang(54);
+                          setNameLanguage("C++");
+                        } else if (fileName[fileName.length - 1] === "c") {
+                          setLang(50);
+                          setNameLanguage("C");
+                        } else if (fileName[fileName.length - 1] === "java") {
+                          setLang(62);
+                          setNameLanguage("Java");
+                        } else if (fileName[fileName.length - 1] === "py") {
+                          setLang(71);
+                          setNameLanguage("Python");
+                        } else if (fileName[fileName.length - 1] === "cs") {
+                          setLang(51);
+                          setNameLanguage("C#");
+                        } else if (fileName[fileName.length - 1] === "js") {
+                          setLang(63);
+                          setNameLanguage("JavaScript");
+                        } else {
+                          setCode("");
+                          openWarningNotificationWithIcon({
+                            message: "File không hợp lệ",
+                          });
+                          return;
+                        }
+                        e.preventDefault();
+                        const reader = new FileReader();
+                        reader.onload = async (e) => {
+                          setCode(e.target.result);
+                        };
+                        reader.readAsText(e.target.files[0]);
                       }
-                      e.preventDefault();
-                      const reader = new FileReader();
-                      reader.onload = async (e) => {
-                        setCode(e.target.result);
-                      };
-                      reader.readAsText(e.target.files[0]);
                     }}
                   />
                   <Divider />

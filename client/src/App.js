@@ -67,44 +67,13 @@ function App() {
   const getAnswer = async ({ GetSolution, testcase }) => {
     let ans = null;
     let maxTime = 0,
-      maxMemory = 0;
+      maxMemory = 0,
+      lastTestCase = GetSolution.length - 1;
     for (let i = GetSolution.length - 1; i >= 0; i--) {
-      if (GetSolution[i].time !== null && GetSolution[i].memory !== null) {
-        maxTime = Math.max(maxTime, Number(GetSolution[i].time));
-        maxMemory = Math.max(maxMemory, Number(GetSolution[i].memory));
-      }
       if (GetSolution[i].status.description !== "Accepted") {
+        lastTestCase = i;
         ans = {
           status: `${GetSolution[i].status.description} test ${i + 1}`,
-          output: GetSolution,
-          lastTestCase: i,
-          maxTime: maxTime * 1000,
-          maxMemory: maxMemory,
-        };
-      } else if (GetSolution[i].stdout) {
-        if (
-          (await fixValue({ newValue: GetSolution[i].stdout })) !==
-          testcase[i].output
-        ) {
-          ans = {
-            status: `Sai test ${i + 1}`,
-            output: GetSolution,
-            lastTestCase: i,
-            maxTime: maxTime * 1000,
-            maxMemory: maxMemory,
-          };
-        }
-      } else if (GetSolution[i].stderr) {
-        ans = {
-          status: `Lỗi test ${i + 1}`,
-          output: GetSolution,
-          lastTestCase: i,
-          maxTime: maxTime * 1000,
-          maxMemory: maxMemory,
-        };
-      } else {
-        ans = {
-          status: `Lỗi biên dịch test ${i + 1}`,
           output: GetSolution,
           lastTestCase: i,
           maxTime: maxTime * 1000,
@@ -113,6 +82,7 @@ function App() {
       }
     }
     if (ans === null) {
+      lastTestCase = GetSolution.length - 1;
       ans = {
         status: `Accepted`,
         output: GetSolution,
@@ -121,6 +91,22 @@ function App() {
         maxMemory: maxMemory,
       };
     }
+    ans = {
+      status: ans.status,
+      output: ans.output,
+      lastTestCase: ans.lastTestCase,
+      maxTime:
+        Math.max(
+          ...GetSolution.filter((element, index) => index <= lastTestCase).map(
+            (element, index) => Number(element.time)
+          )
+        ) * 1000,
+      maxMemory: Math.max(
+        ...GetSolution.filter((element, index) => index <= lastTestCase).map(
+          (element, index) => element.memory
+        )
+      ),
+    };
     return ans;
   };
 
@@ -130,6 +116,7 @@ function App() {
     currentSubmission,
     idProblem,
     idUser,
+    memoryLimit,
   }) => {
     const options = {
       method: "POST",
@@ -180,6 +167,8 @@ function App() {
         GetSolution = await response1.data.submissions;
       }
     }
+
+    // console.log(GetSolution);
     //output: stdout
     //error: stderr
     //compiler_error: compile_output
@@ -187,15 +176,26 @@ function App() {
       GetSolution: GetSolution,
       testcase: testcase,
     });
-    // console.log(answer);
+    let output = [];
+    for (let i = 0; i < answer.output.length; i++) {
+      output.push({
+        ...answer.output[i],
+        stdout: answer.output[i].status.description.includes("Runtime")
+          ? ""
+          : answer.output[i].stdout,
+      });
+    }
     await axios
       .put(env.API_URL + "/update-submission", {
         id: currentSubmission,
         numberOfAcceptedTestCase: answer.lastTestCase,
-        detailTestCase: answer.output,
+        detailTestCase: output,
         maxTime: answer.maxTime,
         maxMemory: answer.maxMemory,
-        status: answer.status,
+        status:
+          answer.maxMemory >= memoryLimit && answer.status.includes("Runtime")
+            ? `Memory Limit Exceeded test ${answer.lastTestCase + 1}`
+            : answer.status,
       })
       .then(function (responseUpdateSubmission) {
         if (answer.status === "Accepted") {
@@ -235,7 +235,8 @@ function App() {
           .then(async (responseSubmission) => {
             let checkExist =
               await responseSubmission.data.dataSubmissions.filter(
-                (x) => x.status === "Đang chờ"
+                (x) =>
+                  x.status === "Đang chờ" || x.status.includes("Processing")
               );
             if (checkExist.length > 0) {
               checkExist.forEach(async (element) => {
@@ -259,6 +260,7 @@ function App() {
                   currentSubmission: element.idSubmission,
                   idProblem: element.idProblem,
                   idUser: element.idUser,
+                  memoryLimit: problem.memoryLimit * 1024,
                 });
               });
             }
@@ -271,13 +273,13 @@ function App() {
         console.log(error);
       });
   };
-  // useEffect(() => {
-  //   const interval = setInterval(() => grading(), 1000);
-  //   return () => clearInterval(interval);
-  // }, []);
+  useEffect(() => {
+    const interval = setInterval(() => grading(), 1000);
+    return () => clearInterval(interval);
+  }, []);
   return (
     <div>
-      <button onClick={grading}>bdwdwjdnww</button>
+      {/* <button onClick={grading}>bdwdwjdnww</button> */}
       <Routes>
         <Route path="/test" element={<Test />}></Route>
         <Route

@@ -326,13 +326,28 @@ export default function DetailContest() {
               label: (
                 <Button
                   className="bg-sky-500	text-white hover:bg-sky-300 w-full"
-                  onClick={() => {
+                  onClick={async () => {
                     setIdContest(item.idContest);
                     setNameContest(item.nameContest);
                     setWriter(item.writer);
                     setTimeStart(item.timeStart);
                     setLengthTime(item.lengthTime);
                     setProblems(item.problems);
+                    setRules(item.rules);
+                    let arr = [];
+                    await dataRulesContest.forEach((element) => {
+                      arr.push({
+                        label: (
+                          <div
+                            dangerouslySetInnerHTML={{
+                              __html: element.content,
+                            }}
+                          ></div>
+                        ),
+                        value: element.content,
+                      });
+                    });
+                    setOptionsRulesContest(arr);
                     setSearchProblem("");
                     showModalEditContest();
                   }}
@@ -545,13 +560,13 @@ export default function DetailContest() {
                 moment(b.timeStart, "DD/MM/YYYY HH:mm")
               )
             ) {
-              return -1;
+              return 1;
             } else if (
               moment(a.timeStart, "DD/MM/YYYY HH:mm").isAfter(
                 moment(b.timeStart, "DD/MM/YYYY HH:mm")
               )
             ) {
-              return 1;
+              return -1;
             } else {
               return 0;
             }
@@ -740,6 +755,7 @@ export default function DetailContest() {
         timeStart: timeStart,
         lengthTime: lengthTime,
         problems: problems,
+        rules: rules,
       })
       .then(function (response) {
         successMessage();
@@ -1129,6 +1145,28 @@ export default function DetailContest() {
                 className="w-full"
                 value={lengthTime}
                 onChange={(e) => setLengthTime(Number(e))}
+              />
+            </div>
+          </div>
+          <div className="flex flex-wrap -mx-3 mb-6">
+            <div className="w-full px-3">
+              <label className="block uppercase tracking-wide text-gray-700 text-base font-bold mb-2">
+                Thể lệ cuộc thi
+              </label>
+              <label className="block tracking-wide text-gray-700 text-base font-bold mb-2">
+                Chọn mẫu hoặc tự viết
+              </label>
+              <Select
+                className="w-full mb-2"
+                placeholder="Chọn mẫu"
+                options={optionsRulesContest}
+                value={"Chọn mẫu"}
+                onChange={(e) => setRules(e)}
+              />
+              <Editor
+                value={rules}
+                onTextChange={(e) => setRules(e.htmlValue)}
+                style={{ height: "320px" }}
               />
             </div>
           </div>

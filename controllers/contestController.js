@@ -103,3 +103,28 @@ exports.deleteContest = (req, res) => {
       });
     });
 };
+
+exports.updateParticipants = (req, res) => {
+  const { participants } = req.body;
+  contestModel
+    .findOneAndUpdate(
+      { idContest: req.body.id },
+      {
+        participants: participants,
+      }
+    )
+    .then(() => {
+      return res.status(204).json({
+        success: true,
+        message: "Update participants successfully",
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).json({
+        success: false,
+        message: "Server error. Please try again.",
+        error: error.message,
+      });
+    });
+};
