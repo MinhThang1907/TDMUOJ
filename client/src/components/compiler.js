@@ -13,6 +13,10 @@ export default function Compiler() {
   const [compileLanguage, setCompileLanguage] = useState("cpp");
 
   const Submit = async () => {
+    if (code === "") {
+      setOutput("Không có mã nguồn");
+      return;
+    }
     setOutput("Đang biên dịch...");
     const response = await fetch(
       "https://judge0-ce.p.rapidapi.com/submissions",
@@ -221,7 +225,7 @@ export default function Compiler() {
               className="bg-sky-500	text-white hover:bg-sky-300 ml-5"
               onClick={Submit}
             >
-              Run
+              Chạy
             </Button>
           </div>
           <Editor

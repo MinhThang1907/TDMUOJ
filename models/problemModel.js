@@ -11,7 +11,11 @@ const problemSchema = new mongoose.Schema({
   description: { type: String },
   solved: { type: Array, default: [] },
   testCase: { type: Array, default: [] },
-  idContest: { type: String, default: "none" },
+  idContest: { type: Array, default: [] },
   solution: { type: Array },
+  public: {
+    type: Boolean,
+    default: false,
+  },
 });
 module.exports = mongoose.model("problem", problemSchema);

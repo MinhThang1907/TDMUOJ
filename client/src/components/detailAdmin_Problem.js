@@ -19,6 +19,7 @@ import {
   Tag,
   Divider,
   notification,
+  Checkbox,
 } from "antd";
 import axios from "axios";
 import { Editor } from "primereact/editor";
@@ -54,6 +55,8 @@ export default function DetailProblem() {
       content: "Thao tác thất bại",
     });
   };
+
+  const [privateProblem, setPrivateProblem] = useState(false);
 
   const [currentKey, setCurrentKey] = useState("");
   const [currentNameProblem, setCurrentNameProblem] = useState("");
@@ -309,6 +312,16 @@ export default function DetailProblem() {
     },
   ];
 
+  const uniqueUser = ({ arr }) => {
+    let unique = {};
+    arr.forEach(function (i) {
+      if (!unique[i.idUser]) {
+        unique[i.idUser] = true;
+      }
+    });
+    return Object.keys(unique).length;
+  };
+
   const [dataProblem, setDataProblem] = useState([]);
   const [options, setOptions] = useState([]);
   const [difficulty, setDifficulty] = useState([]);
@@ -324,10 +337,12 @@ export default function DetailProblem() {
               arr.push({
                 ...ele,
                 key: ele.idProblem,
-                numberSolved: responseSubmission.data.dataSubmissions.filter(
-                  (x) =>
-                    x.idProblem === ele.idProblem && x.status === "Accepted"
-                ).length,
+                numberSolved: uniqueUser({
+                  arr: responseSubmission.data.dataSubmissions.filter(
+                    (x) =>
+                      x.idProblem === ele.idProblem && x.status === "Accepted"
+                  ),
+                }),
               });
             });
             setDataProblem(arr.reverse());
@@ -441,7 +456,7 @@ export default function DetailProblem() {
         tags: currentTags,
         difficulty: currentDifficulty,
         description: currentDescription,
-        idContest: "none",
+        idContest: [],
       })
       .then(function (response) {
         fetchDataProblems();
@@ -590,6 +605,45 @@ export default function DetailProblem() {
       s = s.substring(0, s.length - 1);
     }
     return s;
+  };
+
+  const changeStatePrivateProblem = (e) => {
+    if (e.target.checked) {
+      axios
+        .get(env.API_URL + "/problems", {})
+        .then(function (responseProblem) {
+          axios
+            .get(env.API_URL + "/submission", {})
+            .then(function (responseSubmission) {
+              let arr = [];
+              responseProblem.data.dataProblems.forEach((ele) => {
+                if (!ele.public) {
+                  arr.push({
+                    ...ele,
+                    key: ele.idProblem,
+                    numberSolved: uniqueUser({
+                      arr: responseSubmission.data.dataSubmissions.filter(
+                        (x) =>
+                          x.idProblem === ele.idProblem &&
+                          x.status === "Accepted"
+                      ),
+                    }),
+                  });
+                }
+              });
+              setDataProblem(arr.reverse());
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    } else {
+      fetchDataProblems();
+    }
+    setPrivateProblem(e.target.checked);
   };
 
   return (
@@ -1190,6 +1244,11 @@ export default function DetailProblem() {
           tooltip={<div>Bài tập chưa được duyệt</div>}
         />
       </FloatButton.Group>
+      <div className="flex justify-end items-center align-middle mb-5">
+        <Checkbox onChange={changeStatePrivateProblem} checked={privateProblem}>
+          Các bài tập chưa công khai
+        </Checkbox>
+      </div>
       <Table columns={columns} dataSource={dataProblem} />
     </>
   );

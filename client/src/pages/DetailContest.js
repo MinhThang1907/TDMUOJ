@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { Layout, theme, Tabs, Menu, Divider, Button, Tag, Table } from "antd";
+import { Layout, theme, Tabs, Menu, Divider, Tag, Table } from "antd";
 
 import * as env from "../env.js";
 
 import HeaderPage from "../components/header.js";
 import FooterPage from "../components/footer.js";
 import Problem from "../components/detailProblem.js";
-import { useNavigate, useParams } from "react-router-dom";
+import ContestRanking from "../components/contestRanking.js";
+import SubmissionTable from "../components/submissionsTable.js";
+import { useParams } from "react-router-dom";
 import axios from "axios";
 import moment from "moment";
 
 const { Content } = Layout;
 
 export default function DetailContest() {
-  const navigate = useNavigate();
-  // const user = localStorage.getItem("dataUser")
-  //   ? JSON.parse(localStorage.getItem("dataUser"))
-  //   : null;
+  const user = localStorage.getItem("dataUser")
+    ? JSON.parse(localStorage.getItem("dataUser"))
+    : null;
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -49,8 +50,8 @@ export default function DetailContest() {
       label: "Bảng xếp hạng",
     },
     {
-      key: "submissions",
-      label: "Các bài nộp",
+      key: "MySubmissions",
+      label: "Bài nộp của tôi",
     },
   ];
   const columns = [
@@ -111,6 +112,7 @@ export default function DetailContest() {
       ),
     },
   ];
+  let myInterval;
   useEffect(() => {
     axios
       .get(env.API_URL + "/contest", {})
@@ -128,7 +130,7 @@ export default function DetailContest() {
             .isSameOrAfter(moment())
         ) {
           setStatus("running");
-          setInterval(
+          myInterval = setInterval(
             () =>
               countDownTime({
                 timeStart: contest.timeStart,
@@ -140,7 +142,9 @@ export default function DetailContest() {
             new Array(contest.problems.length).fill(null).map((item, index) => {
               return getItem(
                 <span className="font-medium text-base">
-                  {contest.problems[index].nameProblem}
+                  {String.fromCharCode(index + 65)
+                    .concat(" - ")
+                    .concat(contest.problems[index].nameProblem)}
                 </span>,
                 contest.problems[index].idProblem
               );
@@ -150,7 +154,7 @@ export default function DetailContest() {
           moment(contest.timeStart, "DD/MM/YYYY HH:mm").isAfter(moment())
         ) {
           setStatus("pending");
-          setInterval(async () => {
+          myInterval = setInterval(async () => {
             setCurrent(moment());
             setRemain(moment(contest.timeStart, "DD/MM/YYYY HH:mm"));
             if (
@@ -163,6 +167,18 @@ export default function DetailContest() {
           }, 1000);
         } else {
           setStatus("finished");
+          setListProblems(
+            new Array(contest.problems.length).fill(null).map((item, index) => {
+              return getItem(
+                <span className="font-medium text-base">
+                  {String.fromCharCode(index + 65)
+                    .concat(" - ")
+                    .concat(contest.problems[index].nameProblem)}
+                </span>,
+                contest.problems[index].idProblem
+              );
+            })
+          );
         }
       })
       .catch(function (error) {
@@ -177,7 +193,10 @@ export default function DetailContest() {
     );
     let current = moment();
     if (current.isSameOrAfter(timeEnd)) {
-      navigate("/contest");
+      setStatus("finished");
+      clearInterval(myInterval);
+      console.log(listProblems);
+      return;
     }
     if (timeEnd.diff(current, "days") !== 0) {
       setRemainTime(
@@ -289,7 +308,7 @@ export default function DetailContest() {
 
   return (
     <Layout>
-      <HeaderPage />
+      <HeaderPage currentTab="contest" />
       <Content
         style={{
           padding: "0 48px",
@@ -304,13 +323,13 @@ export default function DetailContest() {
           }}
           className="min-h-screen"
         >
-          {status === "running" && (
+          {(status === "running" || status === "finished") && (
             <>
               <Tabs
-                defaultActiveKey="1"
                 type="card"
                 items={itemsMain}
                 onChange={(e) => setKeyMain(e)}
+                activeKey={keyMain}
               />
               {keyMain === "problems" && (
                 <div className="w-full flex">
@@ -319,6 +338,7 @@ export default function DetailContest() {
                       mode="inline"
                       items={listProblems}
                       onClick={(e) => setIdProblem(e.key)}
+                      disabled={status === "finished" || !contest.participants.find(x => x === user._id)}
                     />
                     <Divider />
                     <div className="text-2xl font-bold">
@@ -361,9 +381,16 @@ export default function DetailContest() {
                     </div>
                     <div className="text-xl">
                       Còn lại:{" "}
-                      <span className="text-red-500 font-bold">
-                        {remainTime}
-                      </span>
+                      {status === "running" && (
+                        <span className="text-red-500 font-bold">
+                          {remainTime}
+                        </span>
+                      )}
+                      {status === "finished" && (
+                        <span className="text-gray-500 font-bold">
+                          Kỳ thi đã kết thúc
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="w-3/4 justify-end">
@@ -371,10 +398,16 @@ export default function DetailContest() {
                       <Problem
                         idProblemFromContest={idProblem}
                         idContest={contest.idContest}
+                        setKeyMain={setKeyMain}
+                        listProblems={listProblems}
                       />
                     )}
                   </div>
                 </div>
+              )}
+              {keyMain === "ranking" && <ContestRanking />}
+              {keyMain === "MySubmissions" && (
+                <SubmissionTable idContest={idContest} idUser={user._id} />
               )}
             </>
           )}

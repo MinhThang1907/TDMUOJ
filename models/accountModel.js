@@ -25,7 +25,7 @@ const accountSchema = new mongoose.Schema({
   },
   rating: {
     type: Number,
-    default: 0,
+    default: 500,
   },
   maxRating: {
     type: Number,

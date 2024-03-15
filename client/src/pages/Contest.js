@@ -8,8 +8,10 @@ import {
   Button,
   Input,
   Calendar,
+  Modal,
+  message,
 } from "antd";
-import { CalendarOutlined } from "@ant-design/icons";
+import { CalendarOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import axios from "axios";
 import moment from "moment";
 
@@ -22,12 +24,20 @@ import { Link } from "react-router-dom";
 const { Content } = Layout;
 
 export default function Contest({ currentTab }) {
-  //   const user = localStorage.getItem("dataUser")
-  //     ? JSON.parse(localStorage.getItem("dataUser"))
-  //     : null;
+  const user = localStorage.getItem("dataUser")
+    ? JSON.parse(localStorage.getItem("dataUser"))
+    : null;
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+
+  const [messageApi, contextHolder] = message.useMessage();
+  const successMessage = () => {
+    messageApi.open({
+      type: "success",
+      content: "Đăng ký thành công",
+    });
+  };
 
   const [contestsAreGoingOn, setContestsAreGoingOn] = useState([]);
   const [contestsInTheFuture, setContestsInTheFuture] = useState([]);
@@ -154,6 +164,84 @@ export default function Contest({ currentTab }) {
     fetchDataContests();
   }, []);
 
+  const [modal, warningRegister] = Modal.useModal();
+  const Register = ({ id }) => {
+    modal.confirm({
+      title: "XÁC NHẬN",
+      icon: <ExclamationCircleOutlined />,
+      content: "Xác nhận đăng ký cuộc thi này",
+      okText: "Đăng ký",
+      cancelText: "Hủy",
+      okType: "danger",
+      onOk() {
+        axios
+          .get(env.API_URL + "/contest", {})
+          .then(async (response) => {
+            let contest = await response.data.dataContests.find(
+              (x) => x.idContest === id
+            );
+            if (contest) {
+              axios
+                .put(env.API_URL + "/update-participants", {
+                  id: id,
+                  participants: [...contest.participants, user._id],
+                })
+                .then(function (response) {
+                  axios
+                    .get(env.API_URL + "/ranking-contest", {})
+                    .then(async (responseRankingContest) => {
+                      let rankingContest =
+                        await responseRankingContest.data.dataRankingContests.find(
+                          (x) => x.idContest === id
+                        );
+                      if (rankingContest) {
+                        let listProblem = [];
+                        await contest.problems.forEach((element, index) => {
+                          listProblem.push({
+                            idProblem: element.idProblem,
+                            nameProblem: String.fromCharCode(65 + index),
+                            idSubmission: [],
+                          });
+                        });
+                        await axios
+                          .put(env.API_URL + "/ranking-contest", {
+                            id: id,
+                            listUser: [
+                              ...rankingContest.listUser,
+                              {
+                                rank: 9999,
+                                idUser: user._id,
+                                score: 0,
+                                penalty: 0,
+                                problems: listProblem,
+                              },
+                            ],
+                          })
+                          .then(function (response) {
+                            successMessage();
+                            fetchDataContests();
+                          })
+                          .catch(function (error) {
+                            console.log(error);
+                          });
+                      }
+                    })
+                    .catch(function (error) {
+                      console.log(error);
+                    });
+                })
+                .catch(function (error) {
+                  console.log(error);
+                });
+            }
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      },
+    });
+  };
+
   const [columnsContestAreGoingOn, setColumnsContestAreGoingOn] = useState([]);
   const [columnsContestInTheFuture, setColumnsContestInTheFuture] = useState(
     []
@@ -164,7 +252,7 @@ export default function Contest({ currentTab }) {
       {
         title: "Thông tin kỳ thi",
         key: "infoContest",
-        width: "80%",
+        width: "70%",
         render: (item) => {
           let timeEnd = moment(item.timeStart, "DD/MM/YYYY HH:mm").add(
             item.lengthTime,
@@ -258,7 +346,24 @@ export default function Contest({ currentTab }) {
         title: "Thành viên",
         key: "participant",
         align: "center",
-        render: (item) => <Link>{item.participants.length}</Link>, //link to ranking,
+        width: "10%",
+        render: (item) => <div>{item.participants.length}</div>,
+      },
+      {
+        title: "Đăng ký",
+        key: "register",
+        align: "center",
+        render: (item) => {
+          if (!item.participants.find((x) => x === user._id)) {
+            return (
+              <Button onClick={() => Register({ id: item.idContest })}>
+                Đăng ký
+              </Button>
+            );
+          } else {
+            return <div className="italic">Đã đăng ký</div>;
+          }
+        },
       },
     ]);
     setColumnsContestInTheFuture([
@@ -406,7 +511,7 @@ export default function Contest({ currentTab }) {
         key: "participant",
         width: "10%",
         align: "center",
-        render: (item) => <Link>{item.participants.length}</Link>, //link to list register,
+        render: (item) => <div>{item.participants.length}</div>,
       },
       {
         title: "Tham gia",
@@ -480,6 +585,8 @@ export default function Contest({ currentTab }) {
   };
   return (
     <Layout>
+      {warningRegister}
+      {contextHolder}
       <HeaderPage currentTab={currentTab} />
       <Content
         style={{
@@ -526,9 +633,7 @@ export default function Contest({ currentTab }) {
                 <div className="italic">Chưa có kỳ thi nào đang diễn ra</div>
               )}
               <Divider />
-              <div className="text-2xl font-bold">
-                Các kỳ thi trong tương lai
-              </div>
+              <div className="text-2xl font-bold">Các kỳ thi sắp diễn ra</div>
               <Divider />
               {contestsInTheFuture.length > 0 ? (
                 <Table

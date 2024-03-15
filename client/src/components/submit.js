@@ -8,7 +8,11 @@ import * as env from "../env.js";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import moment from "moment";
 
-export default function Submit({ idProblemFromContest }) {
+export default function Submit({
+  idProblemFromContest,
+  idContest,
+  setKeyMain,
+}) {
   const user = localStorage.getItem("dataUser")
     ? JSON.parse(localStorage.getItem("dataUser"))
     : null;
@@ -68,13 +72,14 @@ export default function Submit({ idProblemFromContest }) {
     }
   };
 
-  const Submit = () => {
+  const Submit = async () => {
+    let idSubmission = await shortid.generate();
     axios
       .post(env.API_URL + "/submission", {
-        idSubmission: shortid.generate(),
+        idSubmission: idSubmission,
         idProblem: infoProblem.idProblem,
         idUser: user._id,
-        idContest: "none",
+        idContest: idContest ? idContest : "none",
         source: code,
         detailTestCase: infoProblem.testCase,
         maxTime: 0,
@@ -85,8 +90,12 @@ export default function Submit({ idProblemFromContest }) {
         createTime: moment().format("DD/MM/YYYY HH:mm"),
         time: moment().format("YYYY-MM-DD"),
       })
-      .then(function (response) {
-        navigate("/submissions");
+      .then(async (response) => {
+        if (idProblemFromContest) {
+          setKeyMain("MySubmissions");
+        } else {
+          navigate("/submissions");
+        }
       })
       .catch(function (error) {
         console.log(error);

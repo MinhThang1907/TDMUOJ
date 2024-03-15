@@ -168,3 +168,52 @@ exports.updateSolved = (req, res) => {
       });
     });
 };
+
+exports.changeStatus = (req, res) => {
+  const { public } = req.body;
+  problemModel
+    .findOneAndUpdate(
+      { idProblem: req.body.id },
+      {
+        public: public,
+      }
+    )
+    .then(() => {
+      return res.status(204).json({
+        success: true,
+        message: "Update status successfully",
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).json({
+        success: false,
+        message: "Server error. Please try again.",
+        error: error.message,
+      });
+    });
+};
+exports.updateIdContest = (req, res) => {
+  const { idContest } = req.body;
+  problemModel
+    .findOneAndUpdate(
+      { idProblem: req.body.id },
+      {
+        idContest: idContest,
+      }
+    )
+    .then(() => {
+      return res.status(204).json({
+        success: true,
+        message: "Update idContest successfully",
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).json({
+        success: false,
+        message: "Server error. Please try again.",
+        error: error.message,
+      });
+    });
+};

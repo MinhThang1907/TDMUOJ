@@ -42,9 +42,11 @@ import axios from "axios";
 import * as env from "../env.js";
 import shortid from "shortid";
 import moment from "moment";
+import { useNavigate } from "react-router-dom";
 
 export default function DetailContest() {
   dayjs.extend(customParseFormat);
+  const navigate = useNavigate();
   // const user = localStorage.getItem("dataUser")
   //   ? JSON.parse(localStorage.getItem("dataUser"))
   //   : null;
@@ -362,14 +364,8 @@ export default function DetailContest() {
                 <Button
                   className="w-full"
                   type="dashed"
-                  onClick={() => {
-                    setNameContest(item.nameContest);
-                    setWriter(item.writer);
-                    setTimeStart(item.timeStart);
-                    setLengthTime(item.lengthTime);
-                    setProblems(item.problems);
-                    showModalDetailContest();
-                  }}
+                  target="_blank"
+                  href={"/contest/".concat(item.idContest)}
                 >
                   Chi tiết
                 </Button>
@@ -681,14 +677,6 @@ export default function DetailContest() {
     setIsModalEditContest(false);
   };
 
-  const [isModalDetailContest, setIsModalDetailContest] = useState(false);
-  const showModalDetailContest = () => {
-    setIsModalDetailContest(true);
-  };
-  const handleCancelModalDetailContest = () => {
-    setIsModalDetailContest(false);
-  };
-
   const [isModalRulesTemplate, setIsModalRulesTemplate] = useState(false);
   const showModalRulesTemplate = () => {
     setDataRulesContestCopy(dataRulesContest);
@@ -701,20 +689,52 @@ export default function DetailContest() {
     setIsModalRulesTemplate(false);
   };
 
-  const addContest = () => {
+  const addContest = async () => {
+    let idContest = shortid.generate();
     axios
       .post(env.API_URL + "/contest", {
-        idContest: shortid.generate(),
+        idContest: idContest,
         nameContest: nameContest,
         writer: writer,
         timeStart: timeStart,
         lengthTime: lengthTime,
         problems: problems,
+        rules: rules,
       })
       .then(function (response) {
-        fetchDataContests();
-        successMessage();
-        handleCancelModalAddContest();
+        axios
+          .post(env.API_URL + "/ranking-contest", {
+            idContest: idContest,
+          })
+          .then(function (response) {
+            axios
+              .get(env.API_URL + "/problems", {})
+              .then(async (responseProblem) => {
+                await problems.forEach(async (element) => {
+                  let problem = await responseProblem.data.dataProblems.filter(
+                    (x) => x.idProblem === element.idProblem
+                  )[0];
+                  await axios
+                    .put(env.API_URL + "/update-idContest-problems", {
+                      id: problem.idProblem,
+                      idContest: [...problem.idContest, idContest],
+                    })
+                    .then(function (response) {})
+                    .catch(function (error) {
+                      console.log(error);
+                    });
+                });
+              })
+              .catch(function (error) {
+                console.log(error);
+              });
+            fetchDataContests();
+            successMessage();
+            handleCancelModalAddContest();
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
       })
       .catch(function (error) {
         console.log(error);
@@ -1271,13 +1291,6 @@ export default function DetailContest() {
           </div>
         </div>
       </Modal>
-      <Modal
-        closeIcon={null}
-        open={isModalDetailContest}
-        onCancel={handleCancelModalDetailContest}
-        footer={null}
-        className="justify-center w-full"
-      ></Modal>
       <Modal
         closeIcon={null}
         open={isModalRulesTemplate}

@@ -130,7 +130,7 @@ const HeaderPage = ({ currentTab }) => {
   const UserLogout = [
     {
       label: (
-        <Link to="/profile">
+        <Link to={"/profile/".concat(user?._id)}>
           Xin chào, <span className="font-bold">{user && user.username}</span>
         </Link>
       ),

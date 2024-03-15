@@ -21,93 +21,60 @@ import * as env from "./env.js";
 function App() {
   const [infoProblem, setInfoProblem] = useState({});
 
-  // const [answer, setAnswer] = useState({});
-
-  const fixValue = async ({ newValue }) => {
-    let s = "";
-    for (let i = 0; i < newValue.length; i++) {
-      s += newValue[i];
-    }
-    while (
-      s.charCodeAt(s.length - 1) === 10 ||
-      s.charCodeAt(s.length - 1) === 32
-    ) {
-      s = s.substring(0, s.length - 1);
-    }
-    return s;
-  };
-
-  // const COMPARE = ({ output, correctOutput }) => {
-  //   if (!output.length || !correctOutput.length) {
-  //     return false;
-  //   }
-  //   let s1 = "",
-  //     s2 = "";
-  //   for (let i = 0; i < output.length; i++) {
-  //     s1 += output[i];
-  //   }
-  //   for (let i = 0; i < correctOutput.length; i++) {
-  //     s2 += correctOutput[i];
-  //   }
-  //   while (
-  //     s1.charCodeAt(s1.length - 1) === 10 ||
-  //     s1.charCodeAt(s1.length - 1) === 32
-  //   ) {
-  //     s1 = s1.substring(0, s1.length - 1);
-  //   }
-  //   while (
-  //     s2.charCodeAt(s2.length - 1) === 10 ||
-  //     s2.charCodeAt(s2.length - 1) === 32
-  //   ) {
-  //     s2 = s2.substring(0, s2.length - 1);
-  //   }
-  //   return s1 === s2;
-  // };
-
   const getAnswer = async ({ GetSolution, testcase }) => {
-    let ans = null;
-    let maxTime = 0,
-      maxMemory = 0,
-      lastTestCase = GetSolution.length - 1;
-    for (let i = GetSolution.length - 1; i >= 0; i--) {
-      if (GetSolution[i].status.description !== "Accepted") {
-        lastTestCase = i;
+    if (GetSolution) {
+      let ans = null;
+      let maxTime = 0,
+        maxMemory = 0,
+        lastTestCase = GetSolution.length - 1;
+      for (let i = GetSolution.length - 1; i >= 0; i--) {
+        if (GetSolution[i].status.description !== "Accepted") {
+          lastTestCase = i;
+          ans = {
+            status: `${GetSolution[i].status.description} test ${i + 1}`,
+            output: GetSolution,
+            lastTestCase: i,
+            maxTime: maxTime * 1000,
+            maxMemory: maxMemory,
+          };
+        }
+      }
+      if (ans === null) {
+        lastTestCase = GetSolution.length - 1;
         ans = {
-          status: `${GetSolution[i].status.description} test ${i + 1}`,
+          status: `Accepted`,
           output: GetSolution,
-          lastTestCase: i,
+          lastTestCase: GetSolution.length - 1,
           maxTime: maxTime * 1000,
           maxMemory: maxMemory,
         };
       }
-    }
-    if (ans === null) {
-      lastTestCase = GetSolution.length - 1;
       ans = {
-        status: `Accepted`,
-        output: GetSolution,
-        lastTestCase: GetSolution.length - 1,
-        maxTime: maxTime * 1000,
-        maxMemory: maxMemory,
+        status: ans.status,
+        output: ans.output,
+        lastTestCase: ans.lastTestCase,
+        maxTime:
+          Math.max(
+            ...GetSolution.filter(
+              (element, index) => index <= lastTestCase
+            ).map((element, index) => Number(element.time))
+          ) * 1000,
+        maxMemory: Math.max(
+          ...GetSolution.filter((element, index) => index <= lastTestCase).map(
+            (element, index) => element.memory
+          )
+        ),
+      };
+      return ans;
+    } else {
+      return {
+        status: "Compilation Error",
+        output: [],
+        lastTestCase: 0,
+        maxTime: 0,
+        maxMemory: 0,
       };
     }
-    ans = {
-      status: ans.status,
-      output: ans.output,
-      lastTestCase: ans.lastTestCase,
-      maxTime:
-        Math.max(
-          ...GetSolution.filter((element, index) => index <= lastTestCase).map(
-            (element, index) => Number(element.time)
-          )
-        ) * 1000,
-      maxMemory: Math.max(
-        ...GetSolution.filter((element, index) => index <= lastTestCase).map(
-          (element, index) => element.memory
-        )
-      ),
-    };
-    return ans;
   };
 
   const runTestCase = async ({
@@ -132,12 +99,14 @@ function App() {
       },
     };
 
-    const response = await axios.request(options);
+    const response = await axios.request(options).catch(function (error) {
+      console.log(error);
+    });
     const options1 = {
       method: "GET",
       url: "https://judge0-ce.p.rapidapi.com/submissions/batch",
       params: {
-        tokens: response.data.map((v) => v.token).join(","),
+        tokens: response?.data?.map((v) => v.token).join(","),
         fields: "*",
       },
       headers: {
@@ -162,9 +131,14 @@ function App() {
       GetSolution[0].stderr == null &&
       GetSolution[0].compile_output == null
     ) {
-      if (response.data[0].token) {
-        const response1 = await axios.request(options1);
-        GetSolution = await response1.data.submissions;
+      if (response?.data[0].token) {
+        const response1 = await axios.request(options1).catch(function (error) {
+          console.log(error);
+        });
+        GetSolution = await response1?.data?.submissions;
+        if (!GetSolution) {
+          break;
+        }
       }
     }
 
@@ -302,7 +276,7 @@ function App() {
         <Route path="/login" element={<Login />}></Route>
         <Route path="/" element={<Home />}></Route>
         <Route path="/administration" element={<Admin />}></Route>
-        <Route path="/profile" element={<Profile />}></Route>
+        <Route path="/profile/:idUser" element={<Profile />}></Route>
         <Route
           path="/contest"
           element={<Contest currentTab="contest" />}

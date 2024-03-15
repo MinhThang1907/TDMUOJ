@@ -21,6 +21,7 @@ import HeaderPage from "../components/header.js";
 import FooterPage from "../components/footer.js";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import moment from "moment";
 
 const { Content } = Layout;
 
@@ -230,26 +231,47 @@ export default function Problem({ currentTab, setInfoProblem }) {
             let arr = [];
             responseProblem.data.dataProblems.forEach((ele) => {
               if (state) {
-                if (ele.solved.filter((x) => x === user._id).length === 0) {
+                if (
+                  ele.solved.filter((x) => x === user._id).length === 0 &&
+                  ele.public
+                ) {
                   arr.push({
-                    ...ele,
-                    key: ele.idProblem,
-                    numberSolved:
-                      responseSubmission.data.dataSubmissions.filter(
-                        (x) =>
-                          x.idProblem === ele.idProblem &&
-                          x.status === "Accepted"
-                      ).length,
+                    _id: ele._id,
+                    idProblem: ele.idProblem,
+                    nameProblem: ele.nameProblem,
+                    contentProblem: ele.contentProblem,
+                    tags: ele.tags,
+                    example: ele.example,
+                    difficulty: ele.difficulty,
+                    solved: ele.solved,
+                    numberSolved: ele.solved.filter(
+                      (x, index) => ele.solved.indexOf(x) === index
+                    ).length,
+                    timeLimit: ele.timeLimit,
+                    memoryLimit: ele.memoryLimit,
+                    description: ele.description,
+                    testCase: ele.testCase,
+                    idContest: ele.idContest,
                   });
                 }
-              } else {
+              } else if (ele.public) {
                 arr.push({
-                  ...ele,
-                  key: ele.idProblem,
-                  numberSolved: responseSubmission.data.dataSubmissions.filter(
-                    (x) =>
-                      x.idProblem === ele.idProblem && x.status === "Accepted"
+                  _id: ele._id,
+                  idProblem: ele.idProblem,
+                  nameProblem: ele.nameProblem,
+                  contentProblem: ele.contentProblem,
+                  tags: ele.tags,
+                  example: ele.example,
+                  difficulty: ele.difficulty,
+                  solved: ele.solved,
+                  numberSolved: ele.solved.filter(
+                    (x, index) => ele.solved.indexOf(x) === index
                   ).length,
+                  timeLimit: ele.timeLimit,
+                  memoryLimit: ele.memoryLimit,
+                  description: ele.description,
+                  testCase: ele.testCase,
+                  idContest: ele.idContest,
                 });
               }
             });
@@ -281,7 +303,57 @@ export default function Problem({ currentTab, setInfoProblem }) {
       });
   };
   useEffect(() => {
-    fetchDataProblem({ state: hiddenAcceptedProblem });
+    axios
+      .get(env.API_URL + "/contest", {})
+      .then(function (responseContest) {
+        axios
+          .get(env.API_URL + "/problems", {})
+          .then(async (responseProblem) => {
+            let arr = await responseProblem.data.dataProblems.filter(
+              (x) => x.public === false
+            );
+            await arr.forEach(async (element, index) => {
+              let contest = await responseContest.data.dataContests.filter(
+                (x) =>
+                  element.idContest.includes(x.idContest) &&
+                  moment().isAfter(
+                    moment(x.timeStart, "DD/MM/YYYY HH:mm").add(
+                      x.lengthTime,
+                      "minutes"
+                    )
+                  )
+              );
+              if (
+                contest.length > 0 &&
+                moment(contest[0].timeStart, "DD/MM/YYYY HH:mm")
+                  .add(contest[0].lengthTime, "minutes")
+                  .isBefore(moment())
+              ) {
+                await axios
+                  .put(env.API_URL + "/update-status-problems", {
+                    id: element.idProblem,
+                    public: true,
+                  })
+                  .then(function (response) {
+                    console.log("success");
+                    if (index === arr.length - 1) {
+                      fetchDataProblem({ state: false });
+                    }
+                  })
+                  .catch(function (error) {
+                    console.log(error);
+                  });
+              }
+            });
+            fetchDataProblem({ state: false });
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
     fetchTagProblem();
   }, []);
 
@@ -313,6 +385,7 @@ export default function Problem({ currentTab, setInfoProblem }) {
             let filterArray = await responseProblem.data.dataProblems
               .filter(
                 (x) =>
+                  x.public &&
                   x.difficulty >= startDifficulty &&
                   x.difficulty <= endDifficulty &&
                   checkExist({ currentTags: x.tags, tags: tags }) &&
@@ -327,12 +400,22 @@ export default function Problem({ currentTab, setInfoProblem }) {
             let arr = [];
             await filterArray.forEach((element) => {
               arr.push({
-                ...element,
-                key: element.idProblem,
-                numberSolved: responseSubmission.data.dataSubmissions.filter(
-                  (x) =>
-                    x.idProblem === element.idProblem && x.status === "Accepted"
+                _id: element._id,
+                idProblem: element.idProblem,
+                nameProblem: element.nameProblem,
+                contentProblem: element.contentProblem,
+                tags: element.tags,
+                example: element.example,
+                difficulty: element.difficulty,
+                solved: element.solved,
+                numberSolved: element.solved.filter(
+                  (x, index) => element.solved.indexOf(x) === index
                 ).length,
+                timeLimit: element.timeLimit,
+                memoryLimit: element.memoryLimit,
+                description: element.description,
+                testCase: element.testCase,
+                idContest: element.idContest,
               });
             });
             setDataProblem(arr);

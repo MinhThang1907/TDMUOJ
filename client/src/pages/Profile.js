@@ -21,28 +21,63 @@ import * as env from "../env.js";
 
 import HeaderPage from "../components/header.js";
 import FooterPage from "../components/footer.js";
+import { useParams } from "react-router-dom";
 
 const { Content } = Layout;
 
 export default function Profile() {
   Chart.register(...registerables);
   Chart.register(annotationPlugin);
-  const user = localStorage.getItem("dataUser")
-    ? JSON.parse(localStorage.getItem("dataUser"))
-    : null;
+  // const user = localStorage.getItem("dataUser")
+  //   ? JSON.parse(localStorage.getItem("dataUser"))
+  //   : null;
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+  const { idUser } = useParams();
 
   const [profile, setProfile] = useState({});
 
   const fetchProfile = () => {
     axios
       .get(env.API_URL + "/account", {})
-      .then(function (response) {
-        setProfile(
-          response.data.dataAccounts.filter((x) => x._id === user._id)[0]
-        );
+      .then(async (responseAccount) => {
+        let user = await responseAccount.data.dataAccounts.filter(
+          (x) => x._id === idUser
+        )[0];
+        setProfile(user);
+        axios
+          .get(env.API_URL + "/submission", {})
+          .then(async (responseSubmission) => {
+            let dates = [];
+            let submissions =
+              await responseSubmission.data.dataSubmissions.filter(
+                (x) => x.idUser === user._id && x.status === "Accepted"
+              );
+            await submissions.forEach((element) => {
+              dates.push({
+                date: element.time,
+                value: submissions.filter((x) => x.time === element.time)
+                  .length,
+              });
+            });
+            setData(dates);
+            axios
+              .get(env.API_URL + "/problems", {})
+              .then(async (responseProblem) => {
+                let numAccepted =
+                  await responseProblem.data.dataProblems.filter((x) =>
+                    x.solved.includes(user._id)
+                  ).length;
+                setNumberOfAccepted(numAccepted);
+              })
+              .catch(function (error) {
+                console.log(error);
+              });
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
       })
       .catch(function (error) {
         console.log(error);
@@ -50,22 +85,6 @@ export default function Profile() {
   };
 
   const [numberOfAccepted, setNumberOfAccepted] = useState(0);
-  const fetchAchievement = () => {
-    axios
-      .get(env.API_URL + "/problems", {})
-      .then(async (responseProblem) => {
-        let numAccepted = 0;
-        await responseProblem.data.dataProblems.forEach(async (element) => {
-          if (element.solved.filter((x) => x === user._id).length > 0) {
-            numAccepted++;
-          }
-        });
-        setNumberOfAccepted(numAccepted);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-  };
 
   const fetchChartRating = () => {
     new Chart("myChart", {
@@ -168,8 +187,6 @@ export default function Profile() {
   };
   useEffect(() => {
     fetchProfile();
-    fetchAchievement();
-    getDates();
     fetchChartRating();
   }, []);
 
@@ -217,26 +234,6 @@ export default function Profile() {
   };
 
   const [data, setData] = useState([]);
-  const getDates = () => {
-    axios
-      .get(env.API_URL + "/submission", {})
-      .then(async (response) => {
-        let dates = [];
-        let submissions = await response.data.dataSubmissions.filter(
-          (x) => x.idUser === user._id && x.status === "Accepted"
-        );
-        await submissions.forEach((element) => {
-          dates.push({
-            date: element.time,
-            value: submissions.filter((x) => x.time === element.time).length,
-          });
-        });
-        setData(dates);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-  };
 
   const fetchSubmissionHistory = ({ year }) => {
     const cal = new CalHeatmap();
@@ -258,8 +255,8 @@ export default function Profile() {
         scale: {
           color: {
             type: "threshold",
-            range: ["#14432a", "#166b34", "#37a446", "#4dd05a"],
-            domain: [10, 20, 30],
+            range: ["#4dd05a", "#37a446", "#166b34", "#14432a"],
+            domain: [3, 5, 10],
           },
         },
         domain: {
@@ -276,7 +273,7 @@ export default function Profile() {
         },
         date: {
           highlight: [
-            moment().format(), // Highlight today
+            moment().format("YYYY-MM-DD"), // Highlight today
           ],
         },
         itemSelector: "#ex-ghDay",
@@ -408,7 +405,12 @@ export default function Profile() {
                   </div>
                   <hr className="my-6 border-t border-gray-300" />
                   <div className="flex flex-col">
-                    <Menu mode="inline" items={items} onClick={onClick} />
+                    <Menu
+                      mode="inline"
+                      items={items}
+                      onClick={onClick}
+                      defaultSelectedKeys={["info"]}
+                    />
                   </div>
                 </div>
               </div>
@@ -418,44 +420,60 @@ export default function Profile() {
                   <div>
                     <div className="text-base font-semibold mb-4">
                       Điểm xếp hạng hiện tại:{" "}
-                      {user.rating < 1200 ? (
-                        <span className="text-stone-400">{user.rating}</span>
-                      ) : user.rating < 1400 ? (
-                        <span className="text-green-500">{user.rating}</span>
-                      ) : user.rating < 1600 ? (
-                        <span className="text-cyan-300">{user.rating}</span>
-                      ) : user.rating < 1900 ? (
-                        <span className="text-blue-600">{user.rating}</span>
-                      ) : user.rating < 2100 ? (
-                        <span className="text-purple-500">{user.rating}</span>
-                      ) : user.rating < 2400 ? (
-                        <span className="text-amber-500">{user.rating}</span>
-                      ) : user.rating < 2600 ? (
-                        <span className="text-pink-600">{user.rating}</span>
+                      {profile.rating < 1200 ? (
+                        <span className="text-stone-400">{profile.rating}</span>
+                      ) : profile.rating < 1400 ? (
+                        <span className="text-green-500">{profile.rating}</span>
+                      ) : profile.rating < 1600 ? (
+                        <span className="text-cyan-300">{profile.rating}</span>
+                      ) : profile.rating < 1900 ? (
+                        <span className="text-blue-600">{profile.rating}</span>
+                      ) : profile.rating < 2100 ? (
+                        <span className="text-purple-500">
+                          {profile.rating}
+                        </span>
+                      ) : profile.rating < 2400 ? (
+                        <span className="text-amber-500">{profile.rating}</span>
+                      ) : profile.rating < 2600 ? (
+                        <span className="text-pink-600">{profile.rating}</span>
                       ) : (
-                        <span className="text-red-600">{user.rating}</span>
+                        <span className="text-red-600">{profile.rating}</span>
                       )}
                     </div>
                     <div className="text-base font-semibold mb-4">
                       Điểm xếp hạng cao nhất:{" "}
-                      {user.maxRating < 1200 ? (
-                        <span className="text-stone-400">{user.maxRating}</span>
-                      ) : user.maxRating < 1400 ? (
-                        <span className="text-green-500">{user.maxRating}</span>
-                      ) : user.maxRating < 1600 ? (
-                        <span className="text-cyan-300">{user.maxRating}</span>
-                      ) : user.maxRating < 1900 ? (
-                        <span className="text-blue-600">{user.maxRating}</span>
-                      ) : user.maxRating < 2100 ? (
-                        <span className="text-purple-500">
-                          {user.maxRating}
+                      {profile.maxRating < 1200 ? (
+                        <span className="text-stone-400">
+                          {profile.maxRating}
                         </span>
-                      ) : user.maxRating < 2400 ? (
-                        <span className="text-amber-500">{user.maxRating}</span>
-                      ) : user.maxRating < 2600 ? (
-                        <span className="text-pink-600">{user.maxRating}</span>
+                      ) : profile.maxRating < 1400 ? (
+                        <span className="text-green-500">
+                          {profile.maxRating}
+                        </span>
+                      ) : profile.maxRating < 1600 ? (
+                        <span className="text-cyan-300">
+                          {profile.maxRating}
+                        </span>
+                      ) : profile.maxRating < 1900 ? (
+                        <span className="text-blue-600">
+                          {profile.maxRating}
+                        </span>
+                      ) : profile.maxRating < 2100 ? (
+                        <span className="text-purple-500">
+                          {profile.maxRating}
+                        </span>
+                      ) : profile.maxRating < 2400 ? (
+                        <span className="text-amber-500">
+                          {profile.maxRating}
+                        </span>
+                      ) : profile.maxRating < 2600 ? (
+                        <span className="text-pink-600">
+                          {profile.maxRating}
+                        </span>
                       ) : (
-                        <span className="text-red-600">{user.maxRating}</span>
+                        <span className="text-red-600">
+                          {profile.maxRating}
+                        </span>
                       )}
                     </div>
                     <div className="text-base font-semibold mb-4">
