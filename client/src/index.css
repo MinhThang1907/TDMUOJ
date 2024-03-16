@@ -3,4 +3,12 @@
 @tailwind utilities;
 
 body {
+    
+}
+
+ol {
+    list-style: decimal;
+}
+ul{
+    list-style: disc;
 }

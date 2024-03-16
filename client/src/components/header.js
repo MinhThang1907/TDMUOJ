@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Layout, Menu } from "antd";
 import { Link } from "react-router-dom";
+import axios from "axios";
+
+import * as env from "../env.js";
 
 const { Header } = Layout;
 
@@ -112,8 +115,34 @@ const HeaderPage = ({ currentTab }) => {
     fetchData();
   }, []);
 
-  const Logout = () => {
+  const Logout = async () => {
     localStorage.removeItem("dataUser");
+    localStorage.removeItem("hiddenAcceptedProblem");
+    localStorage.removeItem("hiddenTagProblem");
+    let virtualContest = localStorage.getItem("idVirtualContest")
+      ? JSON.parse(localStorage.getItem("idVirtualContest"))
+      : null;
+    if (virtualContest) {
+      await axios
+        .put(env.API_URL + "/delete-contest", {
+          id: virtualContest.idContestVirtual,
+        })
+        .then(function (response) {
+          axios
+            .put(env.API_URL + "/delete-ranking-contest", {
+              id: virtualContest.idContestVirtual,
+            })
+            .then(function (response) {
+              localStorage.removeItem("idVirtualContest");
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
     fetchData();
   };
 

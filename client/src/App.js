@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 import * as env from "./env.js";
+import moment from "moment";
 
 function App() {
   const [infoProblem, setInfoProblem] = useState({});
@@ -246,9 +247,113 @@ function App() {
       .catch(function (error) {
         console.log(error);
       });
+    axios
+      .get(env.API_URL + "/ranking-contest", {})
+      .then(function (responseRankingContest) {
+        axios
+          .get(env.API_URL + "/contest", {})
+          .then(async function (responseContest) {
+            let contestHavePassed = await responseContest.data.dataContests
+              .filter(
+                (x) =>
+                  moment().isAfter(
+                    moment(x.timeStart, "DD/MM/YYYY HH:mm").add(
+                      x.lengthTime,
+                      "minutes"
+                    )
+                  ) &&
+                  x.virtualMode === false &&
+                  x.ratingChange === false
+              )
+              .sort(function (a, b) {
+                if (
+                  moment(a.timeStart, "DD/MM/YYYY HH:mm").isBefore(
+                    moment(b.timeStart, "DD/MM/YYYY HH:mm")
+                  )
+                ) {
+                  return 1;
+                } else if (
+                  moment(a.timeStart, "DD/MM/YYYY HH:mm").isAfter(
+                    moment(b.timeStart, "DD/MM/YYYY HH:mm")
+                  )
+                ) {
+                  return -1;
+                } else {
+                  return 0;
+                }
+              });
+            for (let i = 0; i < contestHavePassed.length; i++) {
+              let participants = [];
+              let ranking =
+                await responseRankingContest.data.dataRankingContests.find(
+                  (x) => x.idContest === contestHavePassed[i].idContest
+                );
+              for (
+                let j = 0;
+                j < contestHavePassed[i].participants.length;
+                j++
+              ) {
+                let userOfContest = await ranking.listUser.find(
+                  (x) =>
+                    x.idUser === contestHavePassed[i].participants[j].idUser
+                );
+                if (userOfContest) {
+                  let change =
+                    (contestHavePassed[i].participants[j].seed -
+                      userOfContest.rank) *
+                    20;
+                  participants.push({
+                    ...contestHavePassed[i].participants[j],
+                    ratingChange: change,
+                  });
+                }
+              }
+              for (let j = 0; j < participants.length; j++) {
+                await axios
+                  .put(env.API_URL + "/update-rating", {
+                    id: participants[j].idUser,
+                    rating: Math.max(
+                      0,
+                      participants[j].currentRating +
+                        participants[j].ratingChange
+                    ),
+                  })
+                  .then(function (response) {})
+                  .catch(function (error) {
+                    console.log(error);
+                  });
+              }
+              await axios
+                .put(env.API_URL + "/update-participants", {
+                  id: contestHavePassed[i].idContest,
+                  participants: participants,
+                })
+                .then(function (response) {
+                  axios
+                    .put(env.API_URL + "/update-rating-contest", {
+                      id: contestHavePassed[i].idContest,
+                      ratingChange: true,
+                    })
+                    .then(function (response) {})
+                    .catch(function (error) {
+                      console.log(error);
+                    });
+                })
+                .catch(function (error) {
+                  console.log(error);
+                });
+            }
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   };
   useEffect(() => {
-    const interval = setInterval(() => grading(), 1000);
+    const interval = setInterval(() => grading(), 2000);
     return () => clearInterval(interval);
   }, []);
   return (

@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Layout, theme, Tabs, Menu, Divider, Tag, Table } from "antd";
+import { Layout, theme, Tabs, Menu, Divider, Tag, Table, Modal } from "antd";
+import {
+  ExclamationCircleOutlined,
+  CheckCircleFilled,
+} from "@ant-design/icons";
 
 import * as env from "../env.js";
 
@@ -8,7 +12,7 @@ import FooterPage from "../components/footer.js";
 import Problem from "../components/detailProblem.js";
 import ContestRanking from "../components/contestRanking.js";
 import SubmissionTable from "../components/submissionsTable.js";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import moment from "moment";
 
@@ -18,9 +22,11 @@ export default function DetailContest() {
   const user = localStorage.getItem("dataUser")
     ? JSON.parse(localStorage.getItem("dataUser"))
     : null;
+  const navigate = useNavigate();
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+  const [modal, warningLeave] = Modal.useModal();
   function getItem(label, key, icon, children, type) {
     return {
       key,
@@ -39,6 +45,8 @@ export default function DetailContest() {
   const [remain, setRemain] = useState(moment());
   const [current, setCurrent] = useState(moment());
   const [status, setStatus] = useState("");
+
+  const [problems, setProblems] = useState([]);
 
   const itemsMain = [
     {
@@ -115,71 +123,109 @@ export default function DetailContest() {
   let myInterval;
   useEffect(() => {
     axios
-      .get(env.API_URL + "/contest", {})
-      .then(async (response) => {
-        let contest = await response.data.dataContests.filter(
-          (x) => x.idContest === idContest
-        )[0];
-        setContest(contest);
-        if (
-          moment(contest.timeStart, "DD/MM/YYYY HH:mm").isSameOrBefore(
-            moment()
-          ) &&
-          moment(contest.timeStart, "DD/MM/YYYY HH:mm")
-            .add(contest.lengthTime, "minutes")
-            .isSameOrAfter(moment())
-        ) {
-          setStatus("running");
-          myInterval = setInterval(
-            () =>
-              countDownTime({
-                timeStart: contest.timeStart,
-                lengthTime: contest.lengthTime,
-              }),
-            1000
-          );
-          setListProblems(
-            new Array(contest.problems.length).fill(null).map((item, index) => {
-              return getItem(
-                <span className="font-medium text-base">
-                  {String.fromCharCode(index + 65)
-                    .concat(" - ")
-                    .concat(contest.problems[index].nameProblem)}
-                </span>,
-                contest.problems[index].idProblem
+      .get(env.API_URL + "/problems", {})
+      .then(async function (responseProblem) {
+        let problems = await responseProblem.data.dataProblems;
+        axios
+          .get(env.API_URL + "/contest", {})
+          .then(async (response) => {
+            let idVirtualContest = localStorage.getItem("idVirtualContest")
+              ? JSON.parse(localStorage.getItem("idVirtualContest"))
+              : null;
+            let contest;
+            if (idVirtualContest?.idContestVirtual === idContest) {
+              contest = await response.data.dataContests.find(
+                (x) => x.idContest === idVirtualContest.idContestVirtual
               );
-            })
-          );
-        } else if (
-          moment(contest.timeStart, "DD/MM/YYYY HH:mm").isAfter(moment())
-        ) {
-          setStatus("pending");
-          myInterval = setInterval(async () => {
-            setCurrent(moment());
-            setRemain(moment(contest.timeStart, "DD/MM/YYYY HH:mm"));
-            if (
-              moment().isSameOrAfter(
-                moment(contest.timeStart, "DD/MM/YYYY HH:mm")
-              )
-            ) {
-              window.location.reload();
+            } else {
+              contest = await response.data.dataContests.find(
+                (x) => x.idContest === idContest
+              );
             }
-          }, 1000);
-        } else {
-          setStatus("finished");
-          setListProblems(
-            new Array(contest.problems.length).fill(null).map((item, index) => {
-              return getItem(
-                <span className="font-medium text-base">
-                  {String.fromCharCode(index + 65)
-                    .concat(" - ")
-                    .concat(contest.problems[index].nameProblem)}
-                </span>,
-                contest.problems[index].idProblem
+            setContest(contest);
+            if (
+              moment(contest.timeStart, "DD/MM/YYYY HH:mm").isSameOrBefore(
+                moment()
+              ) &&
+              moment(contest.timeStart, "DD/MM/YYYY HH:mm")
+                .add(contest.lengthTime, "minutes")
+                .isSameOrAfter(moment())
+            ) {
+              setStatus("running");
+              myInterval = setInterval(
+                () =>
+                  countDownTime({
+                    timeStart: contest.timeStart,
+                    lengthTime: contest.lengthTime,
+                  }),
+                1000
               );
-            })
-          );
-        }
+              setListProblems(
+                new Array(contest.problems.length)
+                  .fill(null)
+                  .map((item, index) => {
+                    return getItem(
+                      <span className="font-medium text-base">
+                        {String.fromCharCode(index + 65)
+                          .concat(" - ")
+                          .concat(contest.problems[index].nameProblem)}{" "}
+                        {problems
+                          .find(
+                            (x) =>
+                              x.idProblem === contest.problems[index].idProblem
+                          )
+                          ?.solved.find((x) => x === user._id) && (
+                          <CheckCircleFilled className="text-green-500" />
+                        )}
+                      </span>,
+                      contest.problems[index].idProblem
+                    );
+                  })
+              );
+            } else if (
+              moment(contest.timeStart, "DD/MM/YYYY HH:mm").isAfter(moment())
+            ) {
+              setStatus("pending");
+              myInterval = setInterval(async () => {
+                setCurrent(moment());
+                setRemain(moment(contest.timeStart, "DD/MM/YYYY HH:mm"));
+                if (
+                  moment().isSameOrAfter(
+                    moment(contest.timeStart, "DD/MM/YYYY HH:mm")
+                  )
+                ) {
+                  window.location.reload();
+                }
+              }, 1000);
+            } else {
+              setStatus("finished");
+              setListProblems(
+                new Array(contest.problems.length)
+                  .fill(null)
+                  .map((item, index) => {
+                    return getItem(
+                      <span className="font-medium text-base">
+                        {String.fromCharCode(index + 65)
+                          .concat(" - ")
+                          .concat(contest.problems[index].nameProblem)}{" "}
+                        {problems
+                          .find(
+                            (x) =>
+                              x.idProblem === contest.problems[index].idProblem
+                          )
+                          ?.solved.find((x) => x === user._id) && (
+                          <CheckCircleFilled className="text-green-500" />
+                        )}
+                      </span>,
+                      contest.problems[index].idProblem
+                    );
+                  })
+              );
+            }
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
       })
       .catch(function (error) {
         console.log(error);
@@ -195,7 +241,31 @@ export default function DetailContest() {
     if (current.isSameOrAfter(timeEnd)) {
       setStatus("finished");
       clearInterval(myInterval);
-      console.log(listProblems);
+      let virtualContest = localStorage.getItem("idVirtualContest")
+        ? JSON.parse(localStorage.getItem("idVirtualContest"))
+        : null;
+      if (virtualContest?.idContestVirtual === idContest) {
+        axios
+          .put(env.API_URL + "/delete-contest", {
+            id: idContest,
+          })
+          .then(function (response) {
+            axios
+              .put(env.API_URL + "/delete-ranking-contest", {
+                id: idContest,
+              })
+              .then(function (response) {
+                localStorage.removeItem("idVirtualContest");
+                navigate("/contest");
+              })
+              .catch(function (error) {
+                console.log(error);
+              });
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      }
       return;
     }
     if (timeEnd.diff(current, "days") !== 0) {
@@ -306,8 +376,50 @@ export default function DetailContest() {
     }
   };
 
+  const leaveVirtualContest = () => {
+    let virtualContest = localStorage.getItem("idVirtualContest")
+      ? JSON.parse(localStorage.getItem("idVirtualContest"))
+      : null;
+    axios
+      .put(env.API_URL + "/delete-contest", {
+        id: virtualContest.idContestVirtual,
+      })
+      .then(function (response) {
+        axios
+          .put(env.API_URL + "/delete-ranking-contest", {
+            id: virtualContest.idContestVirtual,
+          })
+          .then(function (response) {
+            localStorage.removeItem("idVirtualContest");
+            navigate("/contest");
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+
+  const warningLeaveVirtualContest = () => {
+    modal.confirm({
+      title: "CẢNH BÁO",
+      icon: <ExclamationCircleOutlined />,
+      content:
+        "Nếu bạn rời khỏi kỳ thi, bạn sẽ không thể tham gia lại. Bạn có chắc chắn muốn rời khỏi kỳ thi?",
+      okText: "Tôi hiểu",
+      cancelText: "Hủy",
+      okType: "danger",
+      onOk() {
+        leaveVirtualContest();
+      },
+    });
+  };
+
   return (
     <Layout>
+      {warningLeave}
       <HeaderPage currentTab="contest" />
       <Content
         style={{
@@ -338,7 +450,15 @@ export default function DetailContest() {
                       mode="inline"
                       items={listProblems}
                       onClick={(e) => setIdProblem(e.key)}
-                      disabled={status === "finished" || !contest.participants.find(x => x === user._id)}
+                      disabled={
+                        (localStorage.getItem("idVirtualContest")
+                          ? JSON.parse(localStorage.getItem("idVirtualContest"))
+                          : null
+                        )?.idContestVirtual === idContest
+                          ? false
+                          : status === "finished" ||
+                            !contest.participants.find((x) => x.idUser === user._id)
+                      }
                     />
                     <Divider />
                     <div className="text-2xl font-bold">
@@ -392,6 +512,16 @@ export default function DetailContest() {
                         </span>
                       )}
                     </div>
+                    {contest?.virtualMode && (
+                      <div className="mt-5">
+                        <button
+                          class="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 focus:outline-none"
+                          onClick={warningLeaveVirtualContest}
+                        >
+                          Rời khỏi kỳ thi
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <div className="w-3/4 justify-end">
                     {idProblem !== "" && (

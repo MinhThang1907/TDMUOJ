@@ -32,5 +32,13 @@ const contestSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
+  virtualMode: {
+    type: Boolean,
+    default: false,
+  },
+  ratingChange: {
+    type: Boolean,
+    default: false,
+  },
 });
 module.exports = mongoose.model("contest", contestSchema);

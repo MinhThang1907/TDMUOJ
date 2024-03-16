@@ -550,23 +550,25 @@ export default function DetailContest() {
       .get(env.API_URL + "/contest", {})
       .then(function (response) {
         setDataContests(
-          response.data.dataContests.sort(function (a, b) {
-            if (
-              moment(a.timeStart, "DD/MM/YYYY HH:mm").isBefore(
-                moment(b.timeStart, "DD/MM/YYYY HH:mm")
-              )
-            ) {
-              return 1;
-            } else if (
-              moment(a.timeStart, "DD/MM/YYYY HH:mm").isAfter(
-                moment(b.timeStart, "DD/MM/YYYY HH:mm")
-              )
-            ) {
-              return -1;
-            } else {
-              return 0;
-            }
-          })
+          response.data.dataContests
+            .sort(function (a, b) {
+              if (
+                moment(a.timeStart, "DD/MM/YYYY HH:mm").isBefore(
+                  moment(b.timeStart, "DD/MM/YYYY HH:mm")
+                )
+              ) {
+                return 1;
+              } else if (
+                moment(a.timeStart, "DD/MM/YYYY HH:mm").isAfter(
+                  moment(b.timeStart, "DD/MM/YYYY HH:mm")
+                )
+              ) {
+                return -1;
+              } else {
+                return 0;
+              }
+            })
+            .filter((x) => x.virtualMode === false)
         );
       })
       .catch(function (error) {
@@ -700,6 +702,7 @@ export default function DetailContest() {
         lengthTime: lengthTime,
         problems: problems,
         rules: rules,
+        virtualMode: false,
       })
       .then(function (response) {
         axios

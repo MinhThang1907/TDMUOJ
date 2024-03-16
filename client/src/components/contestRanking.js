@@ -164,7 +164,7 @@ export default function ContestRanking() {
                                     x.status.includes("Memory") ||
                                     x.status.includes("Runtime"))
                               );
-                            console.log(submissions);
+                            // console.log(submissions);
                             if (submissions.length === 0) {
                               return <div></div>;
                             } else {
@@ -258,7 +258,7 @@ export default function ContestRanking() {
                       if (
                         checkExist &&
                         checkExist.solved.find(
-                          (x) => x === contest.participants[i]
+                          (x) => x === contest.participants[i].idUser
                         )
                       ) {
                         score += 1;
@@ -274,7 +274,7 @@ export default function ContestRanking() {
                       let submissions =
                         await responseSubmission.data.dataSubmissions.filter(
                           (x) =>
-                            x.idUser === contest.participants[i] &&
+                            x.idUser === contest.participants[i].idUser &&
                             x.idProblem === contest.problems[j].idProblem &&
                             x.idContest === idContest &&
                             (x.status === "Accepted" ||
@@ -301,7 +301,7 @@ export default function ContestRanking() {
                     }
                     listUser.push({
                       rank: 9999,
-                      idUser: contest.participants[i],
+                      idUser: contest.participants[i].idUser,
                       score: score,
                       penalty: penalty,
                       problems: problems,

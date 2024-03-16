@@ -65,3 +65,22 @@ exports.updateRankingContest = (req, res) => {
       });
     });
 };
+
+exports.deleteRankingContest = (req, res) => {
+  rankingContestModel
+    .findOneAndDelete({ idContest: req.body.id }, {})
+    .then(() => {
+      return res.status(204).json({
+        success: true,
+        message: "Delete ranking contest successfully",
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).json({
+        success: false,
+        message: "Server error. Please try again.",
+        error: error.message,
+      });
+    });
+};

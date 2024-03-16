@@ -25,6 +25,7 @@ exports.addContest = async (req, res) => {
     lengthTime,
     problems,
     rules,
+    virtualMode,
   } = req.body;
   const contest = new contestModel({
     idContest: idContest,
@@ -34,6 +35,7 @@ exports.addContest = async (req, res) => {
     lengthTime: lengthTime,
     problems: problems,
     rules: rules,
+    virtualMode: virtualMode,
   });
   return contest
     .save()
@@ -117,6 +119,31 @@ exports.updateParticipants = (req, res) => {
       return res.status(204).json({
         success: true,
         message: "Update participants successfully",
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).json({
+        success: false,
+        message: "Server error. Please try again.",
+        error: error.message,
+      });
+    });
+};
+
+exports.updateRatingChange = (req, res) => {
+  const { ratingChange } = req.body;
+  contestModel
+    .findOneAndUpdate(
+      { idContest: req.body.id },
+      {
+        ratingChange: ratingChange,
+      }
+    )
+    .then(() => {
+      return res.status(204).json({
+        success: true,
+        message: "Update ratingChange successfully",
       });
     })
     .catch((error) => {

@@ -107,3 +107,24 @@ exports.updateAvatar = (req, res) => {
       });
     });
 };
+exports.updateRating = (req, res) => {
+  const { rating } = req.body;
+  accountModel
+    .findByIdAndUpdate(req.body.id, {
+      rating: rating,
+    })
+    .then(() => {
+      return res.status(204).json({
+        success: true,
+        message: "Update rating successfully",
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).json({
+        success: false,
+        message: "Server error. Please try again.",
+        error: error.message,
+      });
+    });
+};

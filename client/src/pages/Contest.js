@@ -14,12 +14,13 @@ import {
 import { CalendarOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import axios from "axios";
 import moment from "moment";
+import shortid from "shortid";
 
 import * as env from "../env.js";
 
 import HeaderPage from "../components/header.js";
 import FooterPage from "../components/footer.js";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const { Content } = Layout;
 
@@ -27,6 +28,7 @@ export default function Contest({ currentTab }) {
   const user = localStorage.getItem("dataUser")
     ? JSON.parse(localStorage.getItem("dataUser"))
     : null;
+  const navigate = useNavigate();
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -48,33 +50,36 @@ export default function Contest({ currentTab }) {
       .get(env.API_URL + "/contest", {})
       .then(async (responseContest) => {
         setAllContest(
-          await responseContest.data.dataContests.sort(function (a, b) {
-            if (
-              moment(a.timeStart, "DD/MM/YYYY HH:mm").isBefore(
-                moment(b.timeStart, "DD/MM/YYYY HH:mm")
-              )
-            ) {
-              return -1;
-            } else if (
-              moment(a.timeStart, "DD/MM/YYYY HH:mm").isAfter(
-                moment(b.timeStart, "DD/MM/YYYY HH:mm")
-              )
-            ) {
-              return 1;
-            } else {
-              return 0;
-            }
-          })
+          await responseContest.data.dataContests
+            .sort(function (a, b) {
+              if (
+                moment(a.timeStart, "DD/MM/YYYY HH:mm").isBefore(
+                  moment(b.timeStart, "DD/MM/YYYY HH:mm")
+                )
+              ) {
+                return -1;
+              } else if (
+                moment(a.timeStart, "DD/MM/YYYY HH:mm").isAfter(
+                  moment(b.timeStart, "DD/MM/YYYY HH:mm")
+                )
+              ) {
+                return 1;
+              } else {
+                return 0;
+              }
+            })
+            .filter((x) => x.virtualMode === false)
         );
         setContestsHavePassed(
           await responseContest.data.dataContests
-            .filter((x) =>
-              moment().isAfter(
-                moment(x.timeStart, "DD/MM/YYYY HH:mm").add(
-                  x.lengthTime,
-                  "minutes"
-                )
-              )
+            .filter(
+              (x) =>
+                moment().isAfter(
+                  moment(x.timeStart, "DD/MM/YYYY HH:mm").add(
+                    x.lengthTime,
+                    "minutes"
+                  )
+                ) && x.virtualMode === false
             )
             .sort(function (a, b) {
               if (
@@ -96,8 +101,10 @@ export default function Contest({ currentTab }) {
         );
         setContestsInTheFuture(
           await responseContest.data.dataContests
-            .filter((x) =>
-              moment().isBefore(moment(x.timeStart, "DD/MM/YYYY HH:mm"))
+            .filter(
+              (x) =>
+                moment().isBefore(moment(x.timeStart, "DD/MM/YYYY HH:mm")) &&
+                x.virtualMode === false
             )
             .sort(function (a, b) {
               if (
@@ -129,7 +136,8 @@ export default function Contest({ currentTab }) {
                     x.lengthTime,
                     "minutes"
                   )
-                )
+                ) &&
+                x.virtualMode === false
             )
             .sort(function (a, b) {
               if (
@@ -164,6 +172,58 @@ export default function Contest({ currentTab }) {
     fetchDataContests();
   }, []);
 
+  const calculateExpectedPlace = async ({ idContest }) => {
+    axios
+      .get(env.API_URL + "/account", {})
+      .then(function (responseAccount) {
+        axios
+          .get(env.API_URL + "/contest", {})
+          .then(async function (responseContest) {
+            let contest = await responseContest.data.dataContests.find(
+              (x) => x.idContest === idContest
+            );
+            let participants = [];
+            for (let i = 0; i < contest.participants.length; i++) {
+              let seed = 0;
+              let userI = await responseAccount.data.dataAccounts.find(
+                (x) => x._id === contest.participants[i].idUser
+              );
+              for (let j = 0; j < contest.participants.length; j++) {
+                if (i !== j) {
+                  let userJ = await responseAccount.data.dataAccounts.find(
+                    (x) => x._id === contest.participants[j].idUser
+                  );
+                  seed += Number(
+                    1 / (1 + 10 ** ((userI.rating - userJ.rating) / 400))
+                  );
+                }
+              }
+              participants.push({
+                idUser: userI._id,
+                seed: parseInt(seed + 1),
+                currentRating: userI.rating,
+                ratingChange: 0,
+              });
+            }
+            axios
+              .put(env.API_URL + "/update-participants", {
+                id: idContest,
+                participants: participants,
+              })
+              .then(function (response) {})
+              .catch(function (error) {
+                console.log(error);
+              });
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+
   const [modal, warningRegister] = Modal.useModal();
   const Register = ({ id }) => {
     modal.confirm({
@@ -184,7 +244,10 @@ export default function Contest({ currentTab }) {
               axios
                 .put(env.API_URL + "/update-participants", {
                   id: id,
-                  participants: [...contest.participants, user._id],
+                  participants: [
+                    ...contest.participants,
+                    { idUser: user._id, seed: 0 },
+                  ],
                 })
                 .then(function (response) {
                   axios
@@ -220,6 +283,7 @@ export default function Contest({ currentTab }) {
                           .then(function (response) {
                             successMessage();
                             fetchDataContests();
+                            calculateExpectedPlace({ idContest: id });
                           })
                           .catch(function (error) {
                             console.log(error);
@@ -240,6 +304,102 @@ export default function Contest({ currentTab }) {
           });
       },
     });
+  };
+
+  const warningVirtualContest = ({ idContest }) => {
+    let idVirtualContest = localStorage.getItem("idVirtualContest")
+      ? JSON.parse(localStorage.getItem("idVirtualContest"))
+      : null;
+    if (!idVirtualContest) {
+      modal.confirm({
+        title: "CẢNH BÁO",
+        icon: <ExclamationCircleOutlined />,
+        content:
+          "Cuộc thi sẽ được chuyển sang chế độ ảo ngay bây giờ, bạn có chắc chắn?",
+        okText: "Tôi hiểu",
+        cancelText: "Hủy",
+        okType: "danger",
+        onOk() {
+          axios
+            .get(env.API_URL + "/contest", {})
+            .then(async function (responseContest) {
+              let contest = await responseContest.data.dataContests.find(
+                (x) => x.idContest === idContest
+              );
+              let idContestVirtual = shortid.generate();
+              if (contest) {
+                axios
+                  .post(env.API_URL + "/contest", {
+                    idContest: idContestVirtual,
+                    nameContest: contest.nameContest,
+                    writer: contest.writer,
+                    timeStart: moment().format("DD/MM/YYYY HH:mm"),
+                    lengthTime: contest.lengthTime,
+                    problems: new Array(contest.problems.length)
+                      .fill(null)
+                      .map((_, i) => {
+                        return {
+                          ...contest.problems[i],
+                          solved: [],
+                        };
+                      }),
+                    rules: contest.rules,
+                    virtualMode: true,
+                  })
+                  .then(function (response) {
+                    axios
+                      .put(env.API_URL + "/update-participants", {
+                        id: idContestVirtual,
+                        participants: [{ idUser: user._id, seed: 0 }],
+                      })
+                      .then(function (response) {
+                        axios
+                          .post(env.API_URL + "/ranking-contest", {
+                            idContest: idContestVirtual,
+                            listUser: [],
+                          })
+                          .then(function (response) {
+                            localStorage.setItem(
+                              "idVirtualContest",
+                              JSON.stringify({
+                                idContestVirtual: idContestVirtual,
+                                idContest: idContest,
+                              })
+                            );
+                            navigate("/contest/".concat(idContestVirtual));
+                          })
+                          .catch(function (error) {
+                            console.log(error);
+                          });
+                      })
+                      .catch(function (error) {
+                        console.log(error);
+                      });
+                  })
+                  .catch(function (error) {
+                    console.log(error);
+                  });
+              }
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+        },
+      });
+    } else if (idVirtualContest.idContest === idContest) {
+      navigate("/contest/".concat(idVirtualContest.idContestVirtual));
+    } else {
+      modal.warning({
+        title: "CẢNH BÁO",
+        icon: <ExclamationCircleOutlined />,
+        content:
+          "Bạn đang tham gia một cuộc thi ảo khác, vui lòng thoát khỏi kỳ thi đó!!",
+        okText: "Tôi hiểu",
+        cancelText: "Hủy",
+        okType: "danger",
+        onOk() {},
+      });
+    }
   };
 
   const [columnsContestAreGoingOn, setColumnsContestAreGoingOn] = useState([]);
@@ -354,7 +514,7 @@ export default function Contest({ currentTab }) {
         key: "register",
         align: "center",
         render: (item) => {
-          if (!item.participants.find((x) => x === user._id)) {
+          if (!item.participants.find((x) => x.idUser === user._id)) {
             return (
               <Button onClick={() => Register({ id: item.idContest })}>
                 Đăng ký
@@ -517,7 +677,13 @@ export default function Contest({ currentTab }) {
         title: "Tham gia",
         key: "join",
         align: "center",
-        render: (item) => <Button>Tham gia ảo</Button>,
+        render: (item) => (
+          <Button
+            onClick={() => warningVirtualContest({ idContest: item.idContest })}
+          >
+            Tham gia ảo
+          </Button>
+        ),
       },
     ]);
   }, 1000);
