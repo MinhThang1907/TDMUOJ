@@ -160,7 +160,10 @@ const HeaderPage = ({ currentTab }) => {
     {
       label: (
         <Link to={"/profile/".concat(user?._id)}>
-          Xin chào, <span className="font-bold">{user && user.username}</span>
+          Xin chào,{" "}
+          <span className="font-bold">
+            {user && user.username.split("@")[0]}
+          </span>
         </Link>
       ),
       key: "profile",

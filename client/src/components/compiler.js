@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import Editor from "@monaco-editor/react";
 import { Select, Input, Button } from "antd";
-import axios from "axios";
 
 import * as env from "../env.js";
 
@@ -80,6 +79,10 @@ export default function Compiler() {
       const error = atob(jsonGetSolution.stderr);
 
       setOutput(`Lỗi :${error}`);
+    } else if (!jsonGetSolution.stdout) {
+      setOutput(
+        `Kết quả :\n\n${""}\n\nThời gian chạy : ${jsonGetSolution.time} giây\nBộ nhớ : ${jsonGetSolution.memory} kilobytes`
+      );
     } else {
       const compilation_error = atob(jsonGetSolution.compile_output);
       setOutput(`Lỗi biên dịch :${compilation_error}`);
@@ -101,85 +104,85 @@ export default function Compiler() {
       setLang(63);
     }
   };
-  const test = async () => {
-    const options = {
-      method: "POST",
-      url: "https://judge0-ce.p.rapidapi.com/submissions/batch",
-      headers: {
-        "content-type": "application/json",
-        "Content-Type": "application/json",
-        "X-RapidAPI-Key": env.key_Judge0_API,
-        "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
-      },
-      data: {
-        submissions: [
-          {
-            language_id: lang,
-            stdin: input,
-            source_code: code,
-          },
-          {
-            language_id: lang,
-            stdin: input,
-            source_code: code,
-          },
-          {
-            language_id: lang,
-            stdin: input,
-            source_code: code,
-          },
-        ],
-      },
-    };
+  // const test = async () => {
+  //   const options = {
+  //     method: "POST",
+  //     url: "https://judge0-ce.p.rapidapi.com/submissions/batch",
+  //     headers: {
+  //       "content-type": "application/json",
+  //       "Content-Type": "application/json",
+  //       "X-RapidAPI-Key": env.key_Judge0_API,
+  //       "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
+  //     },
+  //     data: {
+  //       submissions: [
+  //         {
+  //           language_id: lang,
+  //           stdin: input,
+  //           source_code: code,
+  //         },
+  //         {
+  //           language_id: lang,
+  //           stdin: input,
+  //           source_code: code,
+  //         },
+  //         {
+  //           language_id: lang,
+  //           stdin: input,
+  //           source_code: code,
+  //         },
+  //       ],
+  //     },
+  //   };
 
-    try {
-      const response = await axios.request(options);
-      const options1 = {
-        method: "GET",
-        url: "https://judge0-ce.p.rapidapi.com/submissions/batch",
-        params: {
-          tokens: response.data.map((v) => v.token).join(","),
-          fields: "*",
-        },
-        headers: {
-          "X-RapidAPI-Key": env.key_Judge0_API,
-          "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
-          "content-type": "application/json",
-        },
-      };
+  //   try {
+  //     const response = await axios.request(options);
+  //     const options1 = {
+  //       method: "GET",
+  //       url: "https://judge0-ce.p.rapidapi.com/submissions/batch",
+  //       params: {
+  //         tokens: response.data.map((v) => v.token).join(","),
+  //         fields: "*",
+  //       },
+  //       headers: {
+  //         "X-RapidAPI-Key": env.key_Judge0_API,
+  //         "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
+  //         "content-type": "application/json",
+  //       },
+  //     };
 
-      try {
-        let GetSolution = [
-          {
-            status: { description: "Queue" },
-            stderr: null,
-            compile_output: null,
-          },
-        ];
+  //     try {
+  //       let GetSolution = [
+  //         {
+  //           status: { description: "Queue" },
+  //           stderr: null,
+  //           compile_output: null,
+  //         },
+  //       ];
 
-        while (GetSolution[0].status.description !== "Accepted") {
-          if (response.data[0].token) {
-            const response1 = await axios.request(options1);
-            GetSolution = await response1.data.submissions;
-          }
-        }
-        if (GetSolution.stdout !== null) {
-          const output = GetSolution[0].stdout;
-          console.log(output);
-        } else if (GetSolution.stderr !== null) {
-          const error = GetSolution[0].stderr;
-          console.log(error);
-        } else {
-          const compilation_error = GetSolution[0].compile_output;
-          console.log(compilation_error);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  //       while (GetSolution[0].status.description !== "Accepted") {
+  //         if (response.data[0].token) {
+  //           const response1 = await axios.request(options1);
+  //           GetSolution = await response1.data.submissions;
+  //         }
+  //       }
+  //       if (GetSolution.stdout !== null) {
+  //         const output = GetSolution[0].stdout;
+  //         console.log(output);
+  //       } else if (GetSolution.stderr !== null) {
+  //         const error = GetSolution[0].stderr;
+  //         console.log(error);
+  //       } else {
+  //         const compilation_error = GetSolution[0].compile_output;
+  //         console.log(compilation_error);
+  //       }
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
   return (
     <div className="mt-5">
       <div className="w-full flex">

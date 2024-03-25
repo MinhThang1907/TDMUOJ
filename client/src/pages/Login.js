@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Input, Layout, theme } from "antd";
+import { Button, Input, Layout, theme } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 
 import * as env from "../env.js";
 
@@ -39,7 +42,10 @@ export default function Login() {
     setResult(false);
     if (
       dataUsers.filter(
-        (x) => x.username === username && x.password === password
+        (x) =>
+          x.username === username &&
+          x.password === password &&
+          x.password.length >= 8
       ).length > 0
     ) {
       localStorage.setItem(
@@ -133,6 +139,11 @@ export default function Login() {
                         Tên tài khoản hoặc mật khẩu không đúng
                       </div>
                     )}
+                    <div className="mb-4 justify-end flex">
+                      <Button type="link" href="/forget-password">
+                        Quên mật khẩu?
+                      </Button>
+                    </div>
                     <button
                       type="submit"
                       className="w-32 bg-gradient-to-r from-cyan-400 to-cyan-600 text-white py-2 rounded-lg mx-auto block focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 mb-2"
@@ -140,6 +151,67 @@ export default function Login() {
                     >
                       Đăng nhập
                     </button>
+                  </div>
+                  <div className=" text-center flex justify-center items-center flex-col">
+                    <div className="text-sm mb-2">Hoặc</div>
+                    <div className="mb-2">
+                      <GoogleOAuthProvider clientId="880803946280-enfi6j1e8qkpu6uvmbna9gut9diofjbm.apps.googleusercontent.com">
+                        <GoogleLogin
+                          onSuccess={(credentialResponse) => {
+                            const decoded = jwtDecode(
+                              credentialResponse.credential
+                            );
+                            if (
+                              !dataUsers.find(
+                                (x) => x.username === decoded.email
+                              )
+                            ) {
+                              axios
+                                .post(env.API_URL + "/account", {
+                                  username: decoded.email,
+                                  password: "",
+                                  email: decoded.email,
+                                  name: decoded.name,
+                                  role: "user",
+                                })
+                                .then(function (response) {
+                                  axios
+                                    .get(env.API_URL + "/account", {})
+                                    .then(async function (responseAccount) {
+                                      let account =
+                                        await responseAccount.data.dataAccounts.find(
+                                          (x) => x.username === decoded.email
+                                        );
+                                      localStorage.setItem(
+                                        "dataUser",
+                                        JSON.stringify(account)
+                                      );
+                                      navigate("/");
+                                    })
+                                    .catch(function (error) {
+                                      console.log(error);
+                                    });
+                                })
+                                .catch(function (error) {
+                                  console.log(error);
+                                });
+                            } else {
+                              let account = dataUsers.find(
+                                (x) => x.username === decoded.email
+                              );
+                              localStorage.setItem(
+                                "dataUser",
+                                JSON.stringify(account)
+                              );
+                              navigate("/");
+                            }
+                          }}
+                          onError={() => {
+                            console.log("Login Failed");
+                          }}
+                        />
+                      </GoogleOAuthProvider>
+                    </div>
                   </div>
                   <div className="text-center">
                     <p className="text-sm">

@@ -5,6 +5,8 @@ import Admin from "./pages/Admin";
 import Test from "./components/test";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import ForgetPassword from "./pages/ForgetPassword.js";
+import ResetPassword from "./pages/ResetPassword.js";
 import Problem from "./pages/Problem";
 import DetailProblem from "./pages/DetailProblem";
 import Submission from "./pages/Submissions.js";
@@ -379,6 +381,8 @@ function App() {
         ></Route>
         <Route path="/register" element={<Register />}></Route>
         <Route path="/login" element={<Login />}></Route>
+        <Route path="/forget-password" element={<ForgetPassword />}></Route>
+        <Route path="/reset-password/:idReset" element={<ResetPassword />}></Route>
         <Route path="/" element={<Home />}></Route>
         <Route path="/administration" element={<Admin />}></Route>
         <Route path="/profile/:idUser" element={<Profile />}></Route>

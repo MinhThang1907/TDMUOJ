@@ -18,6 +18,7 @@ const submission = require("./routes/submissionRoute");
 const contest = require("./routes/contestRoute");
 const rulesContest = require("./routes/rulesContestRoute");
 const rankingContest = require("./routes/rankingContestRoute");
+const resetPassword = require("./routes/resetPasswordRoute");
 
 //using
 app.use(account);
@@ -28,6 +29,7 @@ app.use(submission);
 app.use(contest);
 app.use(rulesContest);
 app.use(rankingContest);
+app.use(resetPassword);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

@@ -36,27 +36,52 @@ export default function Register() {
   const [result, setResult] = useState(false);
   const [differentPassword, setDifferentPassword] = useState(false);
   const [differentAccount, setDifferentAccount] = useState(false);
+  const [specialCharacter, setSpecialCharacter] = useState(false);
   const [lengthPassword, setLengthPassword] = useState(false);
+  const [emptyEmail, setEmptyEmail] = useState("");
+  const [existEmail, setExistEmail] = useState("");
+  const [empty, setEmpty] = useState("");
 
   const [modal, warningRegister] = Modal.useModal();
 
   const registerAccount = () => {
     setDifferentPassword(false);
     setDifferentAccount(false);
+    setSpecialCharacter(false);
     setLengthPassword(false);
+    setEmptyEmail("");
+    setExistEmail("");
+    if (
+      username === "" ||
+      password === "" ||
+      confirmPassword === "" ||
+      email === ""
+    ) {
+      setEmpty(true);
+    }
     if (password !== confirmPassword) {
       setDifferentPassword(true);
     }
     if (dataUsers.filter((x) => x.username === username).length > 0) {
       setDifferentAccount(true);
     }
+    if (username.match(/[^a-zA-Z0-9_]/) !== null) {
+      setSpecialCharacter(true);
+    }
     if (password.length < 8) {
       setLengthPassword(true);
+    }
+    if (email === "") {
+      setEmptyEmail("Email không được rỗng");
+    } else if (dataUsers.filter((x) => x.email === email).length > 0) {
+      setExistEmail("Email đã tồn tại");
     }
     if (
       password === confirmPassword &&
       dataUsers.filter((x) => x.username === username).length === 0 &&
-      password.length >= 8
+      password.length >= 8 &&
+      email !== "" &&
+      dataUsers.filter((x) => x.email === email).length > 0
     ) {
       modal.confirm({
         title: "XÁC NHẬN",
@@ -132,7 +157,7 @@ export default function Register() {
                       for="nombre"
                       className="block mb-2 text-sm text-gray-600"
                     >
-                      Tài khoản
+                      Tài khoản (<span className=" text-red-500">*</span>)
                     </label>
                     <Input
                       type="text"
@@ -146,13 +171,18 @@ export default function Register() {
                         Tên đăng nhập đã tồn tại
                       </div>
                     )}
+                    {specialCharacter && (
+                      <div class="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1">
+                        Không được chứa ký tự đặc biệt trừ dấu gạch dưới (_)
+                      </div>
+                    )}
                   </div>
                   <div className="mb-4">
                     <label
                       for="password"
                       className="block mb-2 text-sm text-gray-600"
                     >
-                      Mật khẩu
+                      Mật khẩu (<span className=" text-red-500">*</span>)
                     </label>
                     <Input
                       type="password"
@@ -172,7 +202,8 @@ export default function Register() {
                       for="confirmPassword"
                       className="block mb-2 text-sm text-gray-600"
                     >
-                      Nhập lại mật khẩu
+                      Nhập lại mật khẩu (
+                      <span className=" text-red-500">*</span>)
                     </label>
                     <Input
                       type="password"
@@ -192,7 +223,7 @@ export default function Register() {
                       for="email"
                       className="block mb-2 text-sm text-gray-600"
                     >
-                      Email
+                      Email (<span className=" text-red-500">*</span>)
                     </label>
                     <input
                       type="email"
@@ -201,6 +232,16 @@ export default function Register() {
                       className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
                       onChange={(e) => setEmail(e.target.value)}
                     />
+                    {emptyEmail !== "" && (
+                      <div class="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1">
+                        {emptyEmail}
+                      </div>
+                    )}
+                    {existEmail !== "" && (
+                      <div class="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1">
+                        {existEmail}
+                      </div>
+                    )}
                   </div>
                   <div className="mb-6">
                     <label
@@ -224,6 +265,12 @@ export default function Register() {
                   >
                     Đăng ký
                   </button>
+                  {empty && (
+                    <div class="flex items-center justify-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1">
+                      Không được để trống thông tin bắt buộc (
+                      <span className=" text-red-500">*</span>)
+                    </div>
+                  )}
                 </div>
                 <div className="text-center">
                   <p className="text-sm">
