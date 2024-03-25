@@ -87,6 +87,7 @@ export default function SubmissionTable({ idContest, idUser }) {
                       }
                     } else {
                       arr.push({
+                        idUser: element.idUser,
                         idSubmission: element.idSubmission,
                         createTime: element.createTime,
                         username: responseAccount.data.dataAccounts.filter(
@@ -209,6 +210,11 @@ export default function SubmissionTable({ idContest, idUser }) {
       key: "username",
       width: "13%",
       align: "center",
+      render: (username, item) => (
+        <Link to={"/profile/".concat(item.idUser)}>
+          {username.split("@")[0]}
+        </Link>
+      ),
     },
     {
       title: "Bài tập",

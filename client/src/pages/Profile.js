@@ -87,103 +87,154 @@ export default function Profile() {
   const [numberOfAccepted, setNumberOfAccepted] = useState(0);
 
   const fetchChartRating = () => {
-    new Chart("myChart", {
-      type: "line",
-      data: {
-        labels: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"],
-        datasets: [
-          {
-            label: "Điểm xếp hạng",
-            data: [60, 90, 130, 110, 100, 90, 80, 70, 80, 200],
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            borderColor: "rgb(211, 43, 47)",
-            borderWidth: 3,
-            fill: false,
-          },
-        ],
-      },
-      options: {
-        scales: {
-          y: {
-            min: 0,
-            max: 3000,
-            ticks: {
-              stepSize: 100,
-            },
-          },
-        },
-        plugins: {
-          annotation: {
-            annotations: [
-              {
-                type: "box",
-                yMin: 0,
-                yMax: 1200,
-                borderColor: "rgba(168, 162, 158, 0.25)",
-                borderWidth: 0,
-                backgroundColor: "rgba(168, 162, 158, 0.25)",
+    axios
+      .get(env.API_URL + "/contest", {})
+      .then(async function (responseContest) {
+        let contests = await responseContest.data.dataContests
+          .filter((x) => x.ratingChange === true)
+          .sort((a, b) => {
+            if (
+              moment(a.timeStart, "DD/MM/YYYY HH:mm").isBefore(
+                moment(b.timeStart, "DD/MM/YYYY HH:mm")
+              )
+            ) {
+              return -1;
+            } else {
+              return 1;
+            }
+          });
+        axios
+          .get(env.API_URL + "/account", {})
+          .then(async function (responseAccount) {
+            let labels = [];
+            let data = [];
+            await contests.forEach(async (contest) => {
+              let account = await responseAccount.data.dataAccounts.find(
+                (x) => x._id === idUser
+              );
+              if (account) {
+                let currentContest =
+                  await responseContest.data.dataContests.find(
+                    (x) => x.idContest === contest.idContest
+                  );
+                if (currentContest) {
+                  let currentUser = await currentContest.participants.find(
+                    (x) => x.idUser === account._id
+                  );
+                  if (currentUser) {
+                    labels.push(contest.nameContest);
+                    data.push(
+                      currentUser.currentRating + currentUser.ratingChange
+                    );
+                  }
+                }
+              }
+            });
+            new Chart("myChart", {
+              type: "line",
+              data: {
+                labels: labels,
+                datasets: [
+                  {
+                    label: "Điểm xếp hạng",
+                    data: data,
+                    backgroundColor: "rgba(255, 255, 255, 0.5)",
+                    borderColor: "rgb(211, 43, 47)",
+                    borderWidth: 3,
+                    fill: false,
+                  },
+                ],
               },
-              {
-                type: "box",
-                yMin: 1200,
-                yMax: 1400,
-                borderColor: "rgba(34, 197, 94, 0.25)",
-                borderWidth: 0,
-                backgroundColor: "rgba(34, 197, 94, 0.25)",
+              options: {
+                scales: {
+                  y: {
+                    min: 0,
+                    max: 3000,
+                    ticks: {
+                      stepSize: 100,
+                    },
+                  },
+                },
+                plugins: {
+                  annotation: {
+                    annotations: [
+                      {
+                        type: "box",
+                        yMin: 0,
+                        yMax: 1200,
+                        borderColor: "rgba(168, 162, 158, 0.25)",
+                        borderWidth: 0,
+                        backgroundColor: "rgba(168, 162, 158, 0.25)",
+                      },
+                      {
+                        type: "box",
+                        yMin: 1200,
+                        yMax: 1400,
+                        borderColor: "rgba(34, 197, 94, 0.25)",
+                        borderWidth: 0,
+                        backgroundColor: "rgba(34, 197, 94, 0.25)",
+                      },
+                      {
+                        type: "box",
+                        yMin: 1400,
+                        yMax: 1600,
+                        borderColor: "rgba(103, 232, 249, 0.25)",
+                        borderWidth: 0,
+                        backgroundColor: "rgba(103, 232, 249, 0.25)",
+                      },
+                      {
+                        type: "box",
+                        yMin: 1600,
+                        yMax: 1900,
+                        borderColor: "rgba(37, 99, 235, 0.25)",
+                        borderWidth: 0,
+                        backgroundColor: "rgba(37, 99, 235, 0.25)",
+                      },
+                      {
+                        type: "box",
+                        yMin: 1900,
+                        yMax: 2100,
+                        borderColor: "rgba(168, 85, 247, 0.25)",
+                        borderWidth: 0,
+                        backgroundColor: "rgba(168, 85, 247, 0.25)",
+                      },
+                      {
+                        type: "box",
+                        yMin: 2100,
+                        yMax: 2400,
+                        borderColor: "rgba(245, 158, 11, 0.25)",
+                        borderWidth: 0,
+                        backgroundColor: "rgba(245, 158, 11, 0.25)",
+                      },
+                      {
+                        type: "box",
+                        yMin: 2400,
+                        yMax: 2600,
+                        borderColor: "rgba(219, 39, 119, 0.25)",
+                        borderWidth: 0,
+                        backgroundColor: "rgba(219, 39, 119, 0.25)",
+                      },
+                      {
+                        type: "box",
+                        yMin: 2600,
+                        yMax: 3000,
+                        borderColor: "rgba(220, 38, 38, 0.25)",
+                        borderWidth: 0,
+                        backgroundColor: "rgba(220, 38, 38, 0.25)",
+                      },
+                    ],
+                  },
+                },
               },
-              {
-                type: "box",
-                yMin: 1400,
-                yMax: 1600,
-                borderColor: "rgba(103, 232, 249, 0.25)",
-                borderWidth: 0,
-                backgroundColor: "rgba(103, 232, 249, 0.25)",
-              },
-              {
-                type: "box",
-                yMin: 1600,
-                yMax: 1900,
-                borderColor: "rgba(37, 99, 235, 0.25)",
-                borderWidth: 0,
-                backgroundColor: "rgba(37, 99, 235, 0.25)",
-              },
-              {
-                type: "box",
-                yMin: 1900,
-                yMax: 2100,
-                borderColor: "rgba(168, 85, 247, 0.25)",
-                borderWidth: 0,
-                backgroundColor: "rgba(168, 85, 247, 0.25)",
-              },
-              {
-                type: "box",
-                yMin: 2100,
-                yMax: 2400,
-                borderColor: "rgba(245, 158, 11, 0.25)",
-                borderWidth: 0,
-                backgroundColor: "rgba(245, 158, 11, 0.25)",
-              },
-              {
-                type: "box",
-                yMin: 2400,
-                yMax: 2600,
-                borderColor: "rgba(219, 39, 119, 0.25)",
-                borderWidth: 0,
-                backgroundColor: "rgba(219, 39, 119, 0.25)",
-              },
-              {
-                type: "box",
-                yMin: 2600,
-                yMax: 3000,
-                borderColor: "rgba(220, 38, 38, 0.25)",
-                borderWidth: 0,
-                backgroundColor: "rgba(220, 38, 38, 0.25)",
-              },
-            ],
-          },
-        },
-      },
-    });
+            });
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   };
   useEffect(() => {
     fetchProfile();
@@ -392,7 +443,55 @@ export default function Profile() {
                       className="w-32 h-32 bg-gray-300 rounded-full mb-4 shrink-0"
                     ></Image>
                     <h1 className="text-xl font-bold">
-                      {profile.name !== "" ? profile.name : profile.username}
+                      {profile.maxRating < 1200 ? (
+                        <span className="text-stone-400">
+                          {profile.name !== ""
+                            ? profile.name
+                            : profile.username}
+                        </span>
+                      ) : profile.maxRating < 1400 ? (
+                        <span className="text-green-500">
+                          {profile.name !== ""
+                            ? profile.name
+                            : profile.username}
+                        </span>
+                      ) : profile.maxRating < 1600 ? (
+                        <span className="text-cyan-300">
+                          {profile.name !== ""
+                            ? profile.name
+                            : profile.username}
+                        </span>
+                      ) : profile.maxRating < 1900 ? (
+                        <span className="text-blue-600">
+                          {profile.name !== ""
+                            ? profile.name
+                            : profile.username}
+                        </span>
+                      ) : profile.maxRating < 2100 ? (
+                        <span className="text-purple-500">
+                          {profile.name !== ""
+                            ? profile.name
+                            : profile.username}
+                        </span>
+                      ) : profile.maxRating < 2400 ? (
+                        <span className="text-amber-500">
+                          {profile.name !== ""
+                            ? profile.name
+                            : profile.username}
+                        </span>
+                      ) : profile.maxRating < 2600 ? (
+                        <span className="text-pink-600">
+                          {profile.name !== ""
+                            ? profile.name
+                            : profile.username}
+                        </span>
+                      ) : (
+                        <span className="text-red-600">
+                          {profile.name !== ""
+                            ? profile.name
+                            : profile.username}
+                        </span>
+                      )}
                     </h1>
                     <div className="mt-6 flex flex-wrap gap-4 justify-center">
                       <div className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded cursor-pointer">
