@@ -487,7 +487,7 @@ export default function Problem({ currentTab, setInfoProblem }) {
                 columns={columns}
                 dataSource={dataProblem}
                 rowClassName={(record, index) => {
-                  if (record.solved.filter((x) => x === user._id).length > 0) {
+                  if (record.solved.filter((x) => x === user?._id).length > 0) {
                     return "bg-green-300";
                   }
                 }}

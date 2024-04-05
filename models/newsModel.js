@@ -4,5 +4,6 @@ const newsSchema = new mongoose.Schema({
   content: { type: String, default: "" },
   image: { type: String, default: "" },
   idUser: { type: String, default: "" },
+  pending: { type: Boolean, default: true },
 });
 module.exports = mongoose.model("news", newsSchema);

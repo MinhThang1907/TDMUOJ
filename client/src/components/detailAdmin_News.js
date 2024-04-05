@@ -5,7 +5,7 @@ import {
   PlusOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
-import { Input, Button, Space, Table, FloatButton, Modal, message } from "antd";
+import { Input, Button, Space, Table, FloatButton, Modal, message, Select } from "antd";
 import axios from "axios";
 
 import * as env from "../env.js";
@@ -141,6 +141,23 @@ export default function DetailNews() {
         text
       ),
   });
+
+  const acceptNews = ({ item }) => {
+    axios
+      .put(env.API_URL + "/accept-news", {
+        id: item.key,
+        pending: true,
+      })
+      .then(function (response) {
+        successMessage();
+        fetchDataNews();
+      })
+      .catch(function (error) {
+        errorMessage();
+        console.log(error);
+      });
+  };
+
   const columns = [
     {
       title: "Tiêu đề",
@@ -186,23 +203,102 @@ export default function DetailNews() {
       ),
     },
   ];
+  const columnsPending = [
+    {
+      title: "Tiêu đề",
+      dataIndex: "title",
+      key: "title",
+      width: "25%",
+      ellipsis: true,
+      ...getColumnSearchProps("title"),
+    },
+    {
+      title: "Nội dung",
+      dataIndex: "content",
+      key: "content",
+      width: "50%",
+      ellipsis: true,
+      ...getColumnSearchProps("content"),
+    },
+    {
+      title: "Hành động",
+      key: "action",
+      render: (item) => (
+        <Select
+          value="Chọn hành động"
+          style={{ width: "70%" }}
+          options={[
+            {
+              value: "Delete",
+              label: (
+                <Button
+                  type="primary"
+                  danger
+                  onClick={() => deleteNews({ item: item })}
+                  className="w-full"
+                >
+                  Xóa
+                </Button>
+              ),
+            },
+            {
+              value: "Accept",
+              label: (
+                <Button
+                  className="bg-sky-500	text-white hover:bg-sky-300 w-full"
+                  onClick={() => acceptNews({ item: item })}
+                >
+                  Chấp nhận
+                </Button>
+              ),
+            },
+            {
+              value: "Detail",
+              label: (
+                <Button
+                  type="dashed"
+                  onClick={() => showModalDetailNews({ item: item })}
+                  className="w-full"
+                >
+                  Chi tiết
+                </Button>
+              ),
+            },
+          ]}
+        />
+      ),
+    },
+  ];
 
   const [dataNews, setDataNews] = useState([]);
+  const [dataPendingNews, setDataPendingNews] = useState([]);
   const fetchDataNews = () => {
     axios
       .get(env.API_URL + "/news", {})
       .then(function (response) {
         let arr = [];
+        let arrPending = [];
         response.data.dataNews.forEach((ele) => {
-          arr.push({
-            key: ele._id,
-            title: ele.title,
-            content: ele.content,
-            image: ele.image,
-            idUser: ele.idUser,
-          });
+          if (ele.pending) {
+            arr.push({
+              key: ele._id,
+              title: ele.title,
+              content: ele.content,
+              image: ele.image,
+              idUser: ele.idUser,
+            });
+          } else {
+            arrPending.push({
+              key: ele._id,
+              title: ele.title,
+              content: ele.content,
+              image: ele.image,
+              idUser: ele.idUser,
+            });
+          }
         });
         setDataNews(arr.reverse());
+        setDataPendingNews(arrPending.reverse());
       })
       .catch(function (error) {
         console.log(error);
@@ -223,6 +319,13 @@ export default function DetailNews() {
   };
   const handleCancelModalAddNews = () => {
     setIsModalAddNews(false);
+  };
+  const [isModalPendingNews, setIsModalPendingNews] = useState(false);
+  const showModalPendingNews = () => {
+    setIsModalPendingNews(true);
+  };
+  const handleCancelModalPendingNews = () => {
+    setIsModalPendingNews(false);
   };
 
   const [isModalEditNews, setIsModalEditNews] = useState(false);
@@ -256,6 +359,7 @@ export default function DetailNews() {
         content: content,
         image: image,
         idUser: user._id,
+        pending: true,
       })
       .then(function (response) {
         fetchDataNews();
@@ -326,6 +430,7 @@ export default function DetailNews() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState("");
+  const [uploadImageError, setUploadImageError] = useState(false);
 
   const imagebase64 = (file) => {
     const reader = new FileReader();
@@ -339,8 +444,15 @@ export default function DetailNews() {
 
   const handleUploadImage = async (e) => {
     const file = e.target.files[0];
-    const img = await imagebase64(file);
-    setImage(img);
+    const fileType = file["type"];
+    const validImageTypes = ["image/gif", "image/jpeg", "image/png"];
+    if (validImageTypes.includes(fileType)) {
+      setUploadImageError(false);
+      const img = await imagebase64(file);
+      setImage(img);
+    } else {
+      setUploadImageError(true);
+    }
   };
 
   return (
@@ -349,12 +461,23 @@ export default function DetailNews() {
       {warningDelete}
       <Modal
         closeIcon={null}
+        open={isModalPendingNews}
+        onCancel={handleCancelModalPendingNews}
+        footer={null}
+        className=" justify-center w-[900px] flex"
+      >
+        <div className="w-[900px] max-w-4xl">
+          <Table columns={columnsPending} dataSource={dataPendingNews} />
+        </div>
+      </Modal>
+      <Modal
+        closeIcon={null}
         open={isModalAddNews}
         onCancel={handleCancelModalAddNews}
         footer={null}
-        className="justify-center w-full"
+        className="justify-center w-[900px] flex"
       >
-        <div className="w-full max-w-lg">
+        <div className="w-[900px] max-w-4xl">
           <div className="flex flex-wrap -mx-3 mb-6">
             <div className="w-full px-3">
               <label className="block uppercase tracking-wide text-gray-700 text-base font-bold mb-2">
@@ -382,6 +505,11 @@ export default function DetailNews() {
               </label>
               <Input type="file" onChange={handleUploadImage} />
               {image !== "" && <img src={image} className="mt-5" alt="" />}
+              {uploadImageError && (
+                <div class="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1">
+                  Vui lòng chọn tệp hình ảnh hợp lệ (jpg, jpeg, png)
+                </div>
+              )}
             </div>
           </div>
           <div className="flex items-center">
@@ -396,9 +524,9 @@ export default function DetailNews() {
         open={isModalEditNews}
         onCancel={handleCancelModalEditNews}
         footer={null}
-        className="justify-center w-full"
+        className="justify-center w-[900px] flex"
       >
-        <div className="w-full max-w-lg">
+        <div className="w-[900px] max-w-4xl">
           <div className="flex flex-wrap -mx-3 mb-6">
             <div className="w-full px-3">
               <label className="block uppercase tracking-wide text-gray-700 text-base font-bold mb-2">
@@ -426,6 +554,11 @@ export default function DetailNews() {
               </label>
               <Input type="file" onChange={handleUploadImage} />
               {image !== "" && <img src={image} className="mt-5" alt="" />}
+              {uploadImageError && (
+                <div class="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1">
+                  Vui lòng chọn tệp hình ảnh hợp lệ (jpg, jpeg, png)
+                </div>
+              )}
             </div>
           </div>
           <div className="flex items-center">
@@ -440,26 +573,32 @@ export default function DetailNews() {
         open={isModalDetailNews}
         onCancel={handleCancelModalDetailNews}
         footer={null}
-        className="justify-center w-full"
+        className="justify-center w-[900px] flex"
       >
-        <div className="bg-white">
-          <div className="container px-6 py-10 mx-auto">
-            <h1 className="text-3xl font-semibold text-gray-800 capitalize lg:text-4xl">
-              {title}
-            </h1>
+        <div className="w-[900px] max-w-4xl">
+          <div className="bg-white">
+            <div className="container px-6 py-10 mx-auto">
+              <h1 className="text-3xl font-semibold text-gray-800 capitalize lg:text-4xl">
+                {title}
+              </h1>
 
-            <div className="mt-8 lg:-mx-6 lg:items-center">
-              <div className="mt-6 lg:w-full lg:mt-0 lg:mx-6 ">
-                <p className="mt-3 text-sm text-gray-500 md:text-sm">
-                  {content}
-                </p>
+              <div className="mt-8 lg:-mx-6 lg:items-center">
+                <div className="mt-6 lg:w-full lg:mt-0 lg:mx-6 ">
+                  <p className="mt-3 text-sm text-gray-500 md:text-sm">
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: content.replace("\n", "<br />"),
+                      }}
+                    ></div>
+                  </p>
+                </div>
               </div>
+              <img
+                className="object-cover w-full rounded-xl mt-5"
+                src={image}
+                alt=""
+              />
             </div>
-            <img
-              className="object-cover w-full rounded-xl mt-5"
-              src={image}
-              alt=""
-            />
           </div>
         </div>
       </Modal>
@@ -470,8 +609,9 @@ export default function DetailNews() {
           onClick={showModalAddNews}
         />
         <FloatButton
-          badge={{ count: 5 }}
+          badge={{ count: dataPendingNews.length }}
           tooltip={<div>Tin tức chưa được duyệt</div>}
+          onClick={showModalPendingNews}
         />
       </FloatButton.Group>
       <Table columns={columns} dataSource={dataNews} />

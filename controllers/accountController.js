@@ -45,11 +45,12 @@ exports.addAccount = async (req, res) => {
 };
 
 exports.updateAccount = (req, res) => {
-  const { password, email } = req.body;
+  const { password, email, name } = req.body;
   accountModel
     .findByIdAndUpdate(req.body.id, {
       password: password,
       email: email,
+      name: name,
     })
     .then(() => {
       return res.status(204).json({
@@ -117,6 +118,27 @@ exports.updateRating = (req, res) => {
       return res.status(204).json({
         success: true,
         message: "Update rating successfully",
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).json({
+        success: false,
+        message: "Server error. Please try again.",
+        error: error.message,
+      });
+    });
+};
+exports.updateFollowers = (req, res) => {
+  const { followers } = req.body;
+  accountModel
+    .findByIdAndUpdate(req.body.id, {
+      followers: followers,
+    })
+    .then(() => {
+      return res.status(204).json({
+        success: true,
+        message: "Update followers successfully",
       });
     })
     .catch((error) => {

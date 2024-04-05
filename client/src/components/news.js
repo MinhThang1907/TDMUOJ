@@ -32,6 +32,8 @@ const News = () => {
                   image: ele.image,
                   idUser: ele.idUser,
                   username: check[0].username,
+                  avatar: check[0].avatar,
+                  name: check[0].name,
                 });
                 if (index >= response.data.dataNews.length - 5) {
                   newsBegin.push({
@@ -41,6 +43,7 @@ const News = () => {
                     image: ele.image,
                     idUser: ele.idUser,
                     username: check[0].username,
+                    name: check[0].name,
                   });
                 }
               } else {
@@ -111,15 +114,15 @@ const News = () => {
             />
             <div className="flex items-center mt-6">
               <img
-                className="object-cover object-center w-10 h-10 rounded-full"
-                src="https://images.unsplash.com/photo-1531590878845-12627191e687?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=764&q=80"
+                className="w-10 h-10 rounded-full"
+                src={item.avatar}
                 alt=""
               />
               <div className="mx-4">
                 <h1 className="text-sm text-gray-700">
                   {item.username !== "Không xác định" ? (
                     <Link to={"/profile/".concat(item.idUser)}>
-                      {item.username}
+                      {item.name !== "" ? item.name : item.username}
                     </Link>
                   ) : (
                     <p>{item.username}</p>

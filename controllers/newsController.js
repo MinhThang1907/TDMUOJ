@@ -17,12 +17,13 @@ exports.getAll = (req, res) => {
 };
 
 exports.addNews = async (req, res) => {
-  const { title, content, image, idUser } = req.body;
+  const { title, content, image, idUser, pending } = req.body;
   const news = new newsModel({
     title: title,
     content: content,
     image: image,
     idUser: idUser,
+    pending: pending,
   });
   return news
     .save()
@@ -45,11 +46,12 @@ exports.addNews = async (req, res) => {
 
 exports.updateNews = (req, res) => {
   const { title, content, image } = req.body;
-  newsModel.findByIdAndUpdate(req.body.id, {
-    title: title,
-    content: content,
-    image: image,
-  })
+  newsModel
+    .findByIdAndUpdate(req.body.id, {
+      title: title,
+      content: content,
+      image: image,
+    })
     .then(() => {
       return res.status(204).json({
         success: true,
@@ -67,11 +69,34 @@ exports.updateNews = (req, res) => {
 };
 
 exports.deleteNews = (req, res) => {
-  newsModel.findByIdAndDelete(req.body.id, {})
+  newsModel
+    .findByIdAndDelete(req.body.id, {})
     .then(() => {
       return res.status(204).json({
         success: true,
         message: "Delete news successfully",
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).json({
+        success: false,
+        message: "Server error. Please try again.",
+        error: error.message,
+      });
+    });
+};
+
+exports.acceptNews = (req, res) => {
+  const { pending } = req.body;
+  newsModel
+    .findByIdAndUpdate(req.body.id, {
+      pending: pending,
+    })
+    .then(() => {
+      return res.status(204).json({
+        success: true,
+        message: "Accept news successfully",
       });
     })
     .catch((error) => {
