@@ -44,6 +44,7 @@ const News = () => {
                     idUser: ele.idUser,
                     username: check[0].username,
                     name: check[0].name,
+                    avatar: check[0].avatar,
                   });
                 }
               } else {

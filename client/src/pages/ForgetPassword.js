@@ -56,6 +56,7 @@ export default function ForgetPassword() {
             });
         } else {
           setErrorEmail(true);
+          setLoading(false);
         }
       })
       .catch(function (error) {

@@ -39,7 +39,7 @@ export default function Profile() {
         let checkExist = await responseAccount.data.dataAccounts.filter(
           (x) => x._id === idUser
         )[0];
-        console.log("kkkk", checkExist);
+        // console.log("kkkk", checkExist);
         setProfile(checkExist);
         axios
           .get(env.API_URL + "/submission", {})
@@ -47,8 +47,17 @@ export default function Profile() {
             let dates = [];
             let submissions =
               await responseSubmission.data.dataSubmissions.filter(
-                (x) => x.idUser === checkExist._id && x.status === "Accepted"
+                (x, index) =>
+                  x.idUser === checkExist._id &&
+                  x.status === "Accepted" &&
+                  responseSubmission.data.dataSubmissions.findIndex(
+                    (y) =>
+                      y.idProblem === x.idProblem &&
+                      y.idUser === checkExist._id &&
+                      y.status === "Accepted"
+                  ) === index
               );
+            // console.log(submissions);
             await submissions.forEach((element) => {
               dates.push({
                 date: element.time,

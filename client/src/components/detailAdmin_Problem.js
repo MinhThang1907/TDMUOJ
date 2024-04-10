@@ -1239,10 +1239,6 @@ export default function DetailProblem() {
           icon={<PlusOutlined />}
           onClick={showModalAddProblem}
         />
-        <FloatButton
-          badge={{ count: 5 }}
-          tooltip={<div>Bài tập chưa được duyệt</div>}
-        />
       </FloatButton.Group>
       <div className="flex justify-end items-center align-middle mb-5">
         <Checkbox onChange={changeStatePrivateProblem} checked={privateProblem}>

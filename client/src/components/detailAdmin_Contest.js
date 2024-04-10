@@ -1344,10 +1344,6 @@ export default function DetailContest() {
           icon={<PlusOutlined />}
           onClick={showModalAddContest}
         />
-        <FloatButton
-          badge={{ count: 5 }}
-          tooltip={<div>Cuộc thi chưa được duyệt</div>}
-        />
       </FloatButton.Group>
       <Table columns={columns} dataSource={dataContests} />
     </>

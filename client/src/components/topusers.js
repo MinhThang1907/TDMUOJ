@@ -1,9 +1,58 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+
+import * as env from "../env.js";
+import { Link } from "react-router-dom";
 
 const TopUsers = () => {
+  const [rankingUser, setRankingUser] = useState([]);
+  const fetchDataUser = async () => {
+    axios
+      .get(env.API_URL + "/account", {})
+      .then(async function (responseAccount) {
+        axios
+          .get(env.API_URL + "/problems", {})
+          .then(async function (responseProblems) {
+            let users = await responseAccount.data.dataAccounts.sort((a, b) => {
+              if (a.rating === b.rating) {
+                let numberOfProblemSolvedA =
+                  responseProblems.data.dataProblems.filter((x) =>
+                    x.solved.includes(a._id)
+                  ).length;
+                let numberOfProblemSolvedB =
+                  responseProblems.data.dataProblems.filter((x) =>
+                    x.solved.includes(b._id)
+                  ).length;
+                // console.log(
+                //   "a: ",
+                //   numberOfProblemSolvedA,
+                //   a.username,
+                //   "b: ",
+                //   numberOfProblemSolvedB,
+                //   b.username
+                // );
+                return numberOfProblemSolvedB - numberOfProblemSolvedA;
+              } else {
+                return b.rating - a.rating;
+              }
+            });
+            console.log(users);
+            setRankingUser(users);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  useEffect(() => {
+    fetchDataUser();
+  }, []);
   return (
     <div className="flex flex-col justify-center items-end">
-      <div className="relative flex w-11/12 h-[430px] flex-col rounded-[10px] border-[1px] border-gray-200 bg-white bg-clip-border shadow-md shadow-[#F3F3F3]">
+      <div className="relative flex w-11/12 flex-col rounded-[10px] border-[1px] border-gray-200 bg-white bg-clip-border shadow-md shadow-[#F3F3F3]">
         <div className="flex h-fit w-full items-center justify-between rounded-t-2xl bg-white px-4 pb-[20px] pt-4 shadow-2xl shadow-gray-100">
           <h4 className="text-lg font-bold text-navy-700">
             Xếp hạng thành viên
@@ -34,117 +83,42 @@ const TopUsers = () => {
               </tr>
             </thead>
             <tbody className="px-4">
-              <tr role="row">
-                <td className="py-3 text-sm" role="cell">
-                  <div className="flex items-center gap-2">
-                    <div className="h-[30px] w-[30px] rounded-full">
-                      <img
-                        src="https://images.unsplash.com/photo-1506863530036-1efeddceb993?ixlib=rb-1.2.1&amp;ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&amp;auto=format&amp;fit=crop&amp;w=2244&amp;q=80"
-                        className="h-full w-full rounded-full"
-                        alt=""
-                      />
-                    </div>
-                    <p className="text-sm font-medium text-navy-700">
-                      @maddison_c21
-                    </p>
-                  </div>
-                </td>
-                <td className="py-3 text-sm" role="cell">
-                  <p className="text-md font-medium text-gray-600">
-                    9821
-                  </p>
-                </td>
-              </tr>
-              <tr role="row">
-                <td className="py-3 text-sm" role="cell">
-                  <div className="flex items-center gap-2">
-                    <div className="h-[30px] w-[30px] rounded-full">
-                      <img
-                        src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&amp;ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&amp;auto=format&amp;fit=crop&amp;w=1780&amp;q=80"
-                        className="h-full w-full rounded-full"
-                        alt=""
-                      />
-                    </div>
-                    <p className="text-sm font-medium text-navy-700">
-                      @karl.will02
-                    </p>
-                  </div>
-                </td>
-                <td className="py-3 text-sm" role="cell">
-                  <p className="text-md font-medium text-gray-600">
-                    7032
-                  </p>
-                </td>
-              </tr>
-              <tr role="row">
-                <td className="py-3 text-sm" role="cell">
-                  <div className="flex items-center gap-2">
-                    <div className="h-[30px] w-[30px] rounded-full">
-                      <img
-                        src="https://images.unsplash.com/photo-1573766064535-6d5d4e62bf9d?ixlib=rb-1.2.1&amp;ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&amp;auto=format&amp;fit=crop&amp;w=1315&amp;q=80"
-                        className="h-full w-full rounded-full"
-                        alt=""
-                      />
-                    </div>
-                    <p className="text-sm font-medium text-navy-700">
-                      @andreea.1z
-                    </p>
-                  </div>
-                </td>
-                <td className="py-3 text-sm" role="cell">
-                  <p className="text-md font-medium text-gray-600">
-                    5204
-                  </p>
-                </td>
-              </tr>
-              <tr role="row">
-                <td className="py-3 text-sm" role="cell">
-                  <div className="flex items-center gap-2">
-                    <div className="h-[30px] w-[30px] rounded-full">
-                      <img
-                        src="https://images.unsplash.com/photo-1628157588553-5eeea00af15c?ixlib=rb-1.2.1&amp;ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&amp;auto=format&amp;fit=crop&amp;w=1780&amp;q=80"
-                        className="h-full w-full rounded-full"
-                        alt=""
-                      />
-                    </div>
-                    <p className="text-sm font-medium text-navy-700">
-                      @abraham47.y
-                    </p>
-                  </div>
-                </td>
-                <td className="py-3 text-sm" role="cell">
-                  <p className="text-md font-medium text-gray-600">
-                    4309
-                  </p>
-                </td>
-              </tr>
-              <tr role="row">
-                <td className="py-3 text-sm" role="cell">
-                  <div className="flex items-center gap-2">
-                    <div className="h-[30px] w-[30px] rounded-full">
-                      <img
-                        src="https://i.ibb.co/7p0d1Cd/Frame-24.png"
-                        className="h-full w-full rounded-full"
-                        alt=""
-                      />
-                    </div>
-                    <p className="text-sm font-medium text-navy-700">
-                      @simmmple.web
-                    </p>
-                  </div>
-                </td>
-                <td className="py-3 text-sm" role="cell">
-                  <p className="text-md font-medium text-gray-600">
-                    3871
-                  </p>
-                </td>
-              </tr>
+              {rankingUser.map((item, index) => {
+                if (index < 5) {
+                  return (
+                    <tr role="row">
+                      <td className="py-3 text-sm" role="cell">
+                        <div className="flex items-center gap-2">
+                          <div className="h-[30px] w-[30px] rounded-full">
+                            <img
+                              src={item.avatar}
+                              className="h-full w-full rounded-full"
+                              alt=""
+                            />
+                          </div>
+                          <Link
+                            to={`/profile/${item._id}`}
+                            className="text-sm font-medium text-navy-700"
+                          >
+                            {item.username.split("@")[0]}
+                          </Link>
+                        </div>
+                      </td>
+                      <td className="py-3 text-sm" role="cell">
+                        <p className="text-md font-medium text-gray-600">
+                          {item.rating}
+                        </p>
+                      </td>
+                    </tr>
+                  );
+                }
+              })}
             </tbody>
           </table>
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default TopUsers;

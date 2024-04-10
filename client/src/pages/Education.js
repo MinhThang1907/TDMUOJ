@@ -1,10 +1,11 @@
 import React from "react";
-import { Layout, theme } from "antd";
+import { Layout, theme, Tabs } from "antd";
 
 // import * as env from "../env.js";
 
 import HeaderPage from "../components/header.js";
 import FooterPage from "../components/footer.js";
+import PaintGraph from "../components/paintGraph.js";
 
 const { Content } = Layout;
 
@@ -15,6 +16,18 @@ export default function Education({ currentTab }) {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+
+  const onChange = (key) => {
+    console.log(key);
+  };
+  const items = [
+    {
+      key: "graph",
+      label: "Đồ Thị",
+      children: <PaintGraph />,
+    },
+  ];
+
   return (
     <Layout>
       <HeaderPage currentTab={currentTab} />
@@ -31,7 +44,9 @@ export default function Education({ currentTab }) {
             marginTop: "20px",
           }}
           className="min-h-screen"
-        ></div>
+        >
+          <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
+        </div>
       </Content>
       <FooterPage />
     </Layout>

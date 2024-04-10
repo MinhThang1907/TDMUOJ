@@ -91,7 +91,7 @@ export default function InfoProfile({ profile, numberOfAccepted, data }) {
           {
             width: 30,
             textAlign: "start",
-            text: () => ["", "Thứ 2", "", "Thứ 4", "", "Thứ 6", ""],
+            text: () => ["CN", "T2", "T3", "T4", "T5", "T6", "T7"],
             padding: [25, 0, 0, 0],
           },
         ],
@@ -158,7 +158,7 @@ export default function InfoProfile({ profile, numberOfAccepted, data }) {
           .then(async function (responseAccount) {
             let labels = [];
             let data = [];
-            await contests.forEach(async (contest) => {
+            await contests.forEach(async (contest, index) => {
               let account = await responseAccount.data.dataAccounts.find(
                 (x) => x._id === idUser
               );
@@ -172,6 +172,7 @@ export default function InfoProfile({ profile, numberOfAccepted, data }) {
                     (x) => x.idUser === account._id
                   );
                   if (currentUser) {
+                    console.log(contest);
                     labels.push(contest.nameContest);
                     data.push(
                       currentUser.currentRating + currentUser.ratingChange
@@ -297,46 +298,64 @@ export default function InfoProfile({ profile, numberOfAccepted, data }) {
           <div className="text-base font-semibold mb-4">
             Điểm xếp hạng hiện tại:{" "}
             {profile.rating < 1200 ? (
-              <span className="text-stone-400">{profile.rating}</span>
+              <span className="text-stone-400 font-bold">{profile.rating}</span>
             ) : profile.rating < 1400 ? (
-              <span className="text-green-500">{profile.rating}</span>
+              <span className="text-green-500 font-bold">{profile.rating}</span>
             ) : profile.rating < 1600 ? (
-              <span className="text-cyan-300">{profile.rating}</span>
+              <span className="text-cyan-300 font-bold">{profile.rating}</span>
             ) : profile.rating < 1900 ? (
-              <span className="text-blue-600">{profile.rating}</span>
+              <span className="text-blue-600 font-bold">{profile.rating}</span>
             ) : profile.rating < 2100 ? (
-              <span className="text-purple-500">{profile.rating}</span>
+              <span className="text-purple-500 font-bold">
+                {profile.rating}
+              </span>
             ) : profile.rating < 2400 ? (
-              <span className="text-amber-500">{profile.rating}</span>
+              <span className="text-amber-500 font-bold">{profile.rating}</span>
             ) : profile.rating < 2600 ? (
-              <span className="text-pink-600">{profile.rating}</span>
+              <span className="text-pink-600 font-bold">{profile.rating}</span>
             ) : (
-              <span className="text-red-600">{profile.rating}</span>
+              <span className="text-red-600 font-bold">{profile.rating}</span>
             )}
           </div>
           <div className="text-base font-semibold mb-4">
             Điểm xếp hạng cao nhất:{" "}
             {profile.maxRating < 1200 ? (
-              <span className="text-stone-400">{profile.maxRating}</span>
+              <span className="text-stone-400 font-bold">
+                {profile.maxRating}
+              </span>
             ) : profile.maxRating < 1400 ? (
-              <span className="text-green-500">{profile.maxRating}</span>
+              <span className="text-green-500 font-bold">
+                {profile.maxRating}
+              </span>
             ) : profile.maxRating < 1600 ? (
-              <span className="text-cyan-300">{profile.maxRating}</span>
+              <span className="text-cyan-300 font-bold">
+                {profile.maxRating}
+              </span>
             ) : profile.maxRating < 1900 ? (
-              <span className="text-blue-600">{profile.maxRating}</span>
+              <span className="text-blue-600 font-bold">
+                {profile.maxRating}
+              </span>
             ) : profile.maxRating < 2100 ? (
-              <span className="text-purple-500">{profile.maxRating}</span>
+              <span className="text-purple-500 font-bold">
+                {profile.maxRating}
+              </span>
             ) : profile.maxRating < 2400 ? (
-              <span className="text-amber-500">{profile.maxRating}</span>
+              <span className="text-amber-500 font-bold">
+                {profile.maxRating}
+              </span>
             ) : profile.maxRating < 2600 ? (
-              <span className="text-pink-600">{profile.maxRating}</span>
+              <span className="text-pink-600 font-bold">
+                {profile.maxRating}
+              </span>
             ) : (
-              <span className="text-red-600">{profile.maxRating}</span>
+              <span className="text-red-600 font-bold">
+                {profile.maxRating}
+              </span>
             )}
           </div>
           <div className="text-base font-semibold mb-4">
             Số vấn đề đã giải quyết:{" "}
-            <span className="font-normal">{numberOfAccepted}</span>
+            <span className="font-bold">{numberOfAccepted}</span>
           </div>
         </div>
       </div>

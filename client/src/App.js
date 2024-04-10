@@ -15,6 +15,7 @@ import Contest from "./pages/Contest.js";
 import DetailContest from "./pages/DetailContest.js";
 import Member from "./pages/Member.js";
 import Education from "./pages/Education.js";
+import RankingUser from "./pages/RankingUser.js";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -382,10 +383,17 @@ function App() {
         <Route path="/register" element={<Register />}></Route>
         <Route path="/login" element={<Login />}></Route>
         <Route path="/forget-password" element={<ForgetPassword />}></Route>
-        <Route path="/reset-password/:idReset" element={<ResetPassword />}></Route>
+        <Route
+          path="/reset-password/:idReset"
+          element={<ResetPassword />}
+        ></Route>
         <Route path="/" element={<Home />}></Route>
         <Route path="/administration" element={<Admin />}></Route>
         <Route path="/profile/:idUser" element={<Profile />}></Route>
+        <Route
+          path="/users"
+          element={<RankingUser currentTab="users" />}
+        ></Route>
         <Route
           path="/contest"
           element={<Contest currentTab="contest" />}
