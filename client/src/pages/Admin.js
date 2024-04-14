@@ -71,12 +71,6 @@ export default function Admin() {
                       TDMUOJ Admin
                     </span>
                   </Link>
-                  <div className="lg:block lg:pl-32">
-                    <Input
-                      placeholder="Search"
-                      addonBefore={<SearchOutlined />}
-                    />
-                  </div>
                 </div>
               </div>
             </div>

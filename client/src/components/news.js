@@ -21,43 +21,35 @@ const News = () => {
             let arr = [];
             let newsBegin = [];
             response.data.dataNews.forEach((ele, index) => {
-              let check = res.data.dataAccounts.filter(
-                (x) => x._id === ele.idUser
-              );
-              if (check.length > 0) {
-                arr.push({
-                  key: ele._id,
-                  title: ele.title,
-                  content: ele.content,
-                  image: ele.image,
-                  idUser: ele.idUser,
-                  username: check[0].username,
-                  avatar: check[0].avatar,
-                  name: check[0].name,
-                });
-                if (index >= response.data.dataNews.length - 5) {
-                  newsBegin.push({
+              if (ele.pending === true) {
+                let check = res.data.dataAccounts.filter(
+                  (x) => x._id === ele.idUser
+                );
+                if (check.length > 0) {
+                  arr.push({
                     key: ele._id,
                     title: ele.title,
                     content: ele.content,
                     image: ele.image,
                     idUser: ele.idUser,
                     username: check[0].username,
-                    name: check[0].name,
                     avatar: check[0].avatar,
+                    name: check[0].name,
                   });
-                }
-              } else {
-                arr.push({
-                  key: ele._id,
-                  title: ele.title,
-                  content: ele.content,
-                  image: ele.image,
-                  idUser: ele.idUser,
-                  username: "Không xác định",
-                });
-                if (index >= response.data.dataNews.length - 5) {
-                  newsBegin.push({
+                  if (index >= response.data.dataNews.length - 5) {
+                    newsBegin.push({
+                      key: ele._id,
+                      title: ele.title,
+                      content: ele.content,
+                      image: ele.image,
+                      idUser: ele.idUser,
+                      username: check[0].username,
+                      name: check[0].name,
+                      avatar: check[0].avatar,
+                    });
+                  }
+                } else {
+                  arr.push({
                     key: ele._id,
                     title: ele.title,
                     content: ele.content,
@@ -65,6 +57,16 @@ const News = () => {
                     idUser: ele.idUser,
                     username: "Không xác định",
                   });
+                  if (index >= response.data.dataNews.length - 5) {
+                    newsBegin.push({
+                      key: ele._id,
+                      title: ele.title,
+                      content: ele.content,
+                      image: ele.image,
+                      idUser: ele.idUser,
+                      username: "Không xác định",
+                    });
+                  }
                 }
               }
             });

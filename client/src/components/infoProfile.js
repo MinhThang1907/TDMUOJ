@@ -181,103 +181,105 @@ export default function InfoProfile({ profile, numberOfAccepted, data }) {
                 }
               }
             });
-            new Chart("myChart", {
-              type: "line",
-              data: {
-                labels: labels,
-                datasets: [
-                  {
-                    label: "Điểm xếp hạng",
-                    data: data,
-                    backgroundColor: "rgba(255, 255, 255, 0.5)",
-                    borderColor: "rgb(211, 43, 47)",
-                    borderWidth: 3,
-                    fill: false,
+            setTimeout(() => {
+              new Chart("myChart", {
+                type: "line",
+                data: {
+                  labels: labels,
+                  datasets: [
+                    {
+                      label: "Điểm xếp hạng",
+                      data: data,
+                      backgroundColor: "rgba(255, 255, 255, 0.5)",
+                      borderColor: "rgb(211, 43, 47)",
+                      borderWidth: 3,
+                      fill: false,
+                    },
+                  ],
+                },
+                options: {
+                  scales: {
+                    y: {
+                      min: 0,
+                      max: 3000,
+                      ticks: {
+                        stepSize: 100,
+                      },
+                    },
                   },
-                ],
-              },
-              options: {
-                scales: {
-                  y: {
-                    min: 0,
-                    max: 3000,
-                    ticks: {
-                      stepSize: 100,
+                  plugins: {
+                    annotation: {
+                      annotations: [
+                        {
+                          type: "box",
+                          yMin: 0,
+                          yMax: 1200,
+                          borderColor: "rgba(168, 162, 158, 0.25)",
+                          borderWidth: 0,
+                          backgroundColor: "rgba(168, 162, 158, 0.25)",
+                        },
+                        {
+                          type: "box",
+                          yMin: 1200,
+                          yMax: 1400,
+                          borderColor: "rgba(34, 197, 94, 0.25)",
+                          borderWidth: 0,
+                          backgroundColor: "rgba(34, 197, 94, 0.25)",
+                        },
+                        {
+                          type: "box",
+                          yMin: 1400,
+                          yMax: 1600,
+                          borderColor: "rgba(103, 232, 249, 0.25)",
+                          borderWidth: 0,
+                          backgroundColor: "rgba(103, 232, 249, 0.25)",
+                        },
+                        {
+                          type: "box",
+                          yMin: 1600,
+                          yMax: 1900,
+                          borderColor: "rgba(37, 99, 235, 0.25)",
+                          borderWidth: 0,
+                          backgroundColor: "rgba(37, 99, 235, 0.25)",
+                        },
+                        {
+                          type: "box",
+                          yMin: 1900,
+                          yMax: 2100,
+                          borderColor: "rgba(168, 85, 247, 0.25)",
+                          borderWidth: 0,
+                          backgroundColor: "rgba(168, 85, 247, 0.25)",
+                        },
+                        {
+                          type: "box",
+                          yMin: 2100,
+                          yMax: 2400,
+                          borderColor: "rgba(245, 158, 11, 0.25)",
+                          borderWidth: 0,
+                          backgroundColor: "rgba(245, 158, 11, 0.25)",
+                        },
+                        {
+                          type: "box",
+                          yMin: 2400,
+                          yMax: 2600,
+                          borderColor: "rgba(219, 39, 119, 0.25)",
+                          borderWidth: 0,
+                          backgroundColor: "rgba(219, 39, 119, 0.25)",
+                        },
+                        {
+                          type: "box",
+                          yMin: 2600,
+                          yMax: 3000,
+                          borderColor: "rgba(220, 38, 38, 0.25)",
+                          borderWidth: 0,
+                          backgroundColor: "rgba(220, 38, 38, 0.25)",
+                        },
+                      ],
                     },
                   },
                 },
-                plugins: {
-                  annotation: {
-                    annotations: [
-                      {
-                        type: "box",
-                        yMin: 0,
-                        yMax: 1200,
-                        borderColor: "rgba(168, 162, 158, 0.25)",
-                        borderWidth: 0,
-                        backgroundColor: "rgba(168, 162, 158, 0.25)",
-                      },
-                      {
-                        type: "box",
-                        yMin: 1200,
-                        yMax: 1400,
-                        borderColor: "rgba(34, 197, 94, 0.25)",
-                        borderWidth: 0,
-                        backgroundColor: "rgba(34, 197, 94, 0.25)",
-                      },
-                      {
-                        type: "box",
-                        yMin: 1400,
-                        yMax: 1600,
-                        borderColor: "rgba(103, 232, 249, 0.25)",
-                        borderWidth: 0,
-                        backgroundColor: "rgba(103, 232, 249, 0.25)",
-                      },
-                      {
-                        type: "box",
-                        yMin: 1600,
-                        yMax: 1900,
-                        borderColor: "rgba(37, 99, 235, 0.25)",
-                        borderWidth: 0,
-                        backgroundColor: "rgba(37, 99, 235, 0.25)",
-                      },
-                      {
-                        type: "box",
-                        yMin: 1900,
-                        yMax: 2100,
-                        borderColor: "rgba(168, 85, 247, 0.25)",
-                        borderWidth: 0,
-                        backgroundColor: "rgba(168, 85, 247, 0.25)",
-                      },
-                      {
-                        type: "box",
-                        yMin: 2100,
-                        yMax: 2400,
-                        borderColor: "rgba(245, 158, 11, 0.25)",
-                        borderWidth: 0,
-                        backgroundColor: "rgba(245, 158, 11, 0.25)",
-                      },
-                      {
-                        type: "box",
-                        yMin: 2400,
-                        yMax: 2600,
-                        borderColor: "rgba(219, 39, 119, 0.25)",
-                        borderWidth: 0,
-                        backgroundColor: "rgba(219, 39, 119, 0.25)",
-                      },
-                      {
-                        type: "box",
-                        yMin: 2600,
-                        yMax: 3000,
-                        borderColor: "rgba(220, 38, 38, 0.25)",
-                        borderWidth: 0,
-                        backgroundColor: "rgba(220, 38, 38, 0.25)",
-                      },
-                    ],
-                  },
-                },
-              },
-            });
+              });
+            }, 1000);
           })
           .catch(function (error) {
             console.log(error);

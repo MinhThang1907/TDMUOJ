@@ -49,6 +49,10 @@ export default function RequestNews() {
     }
   };
   const requestNews = () => {
+    if (title === "" || content === "") {
+      errorMessage({ content: "Vui lòng điền đầy đủ thông tin" });
+      return;
+    }
     axios
       .post(env.API_URL + "/news", {
         title: title,
