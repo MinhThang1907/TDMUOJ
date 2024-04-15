@@ -49,6 +49,9 @@ export default function SubmissionTable({ idContest, idUser }) {
                           username: responseAccount.data.dataAccounts.filter(
                             (x) => x._id === element.idUser
                           )[0].username,
+                          rating: responseAccount.data.dataAccounts.filter(
+                            (x) => x._id === element.idUser
+                          )[0].rating,
                           idProblem: element.idProblem,
                           problem:
                             await responseProblem.data.dataProblems.filter(
@@ -93,6 +96,9 @@ export default function SubmissionTable({ idContest, idUser }) {
                         username: responseAccount.data.dataAccounts.filter(
                           (x) => x._id === element.idUser
                         )[0].username,
+                        rating: responseAccount.data.dataAccounts.filter(
+                          (x) => x._id === element.idUser
+                        )[0].rating,
                         idProblem: element.idProblem,
                         problem: await responseProblem.data.dataProblems.filter(
                           (x) => x.idProblem === element.idProblem
@@ -210,11 +216,69 @@ export default function SubmissionTable({ idContest, idUser }) {
       key: "username",
       width: "13%",
       align: "center",
-      render: (username, item) => (
-        <Link to={"/profile/".concat(item.idUser)}>
-          {username.split("@")[0]}
-        </Link>
-      ),
+      render: (username, item) => {
+        return (
+          <>
+            {item.rating < 1200 ? (
+              <a
+                className="text-stone-400 font-bold"
+                href={"/profile/".concat(item.idUser)}
+              >
+                {username.split("@")[0]}
+              </a>
+            ) : item.rating < 1400 ? (
+              <a
+                className="text-green-500 font-bold"
+                href={"/profile/".concat(item.idUser)}
+              >
+                {username.split("@")[0]}
+              </a>
+            ) : item.rating < 1600 ? (
+              <a
+                className="text-cyan-300 font-bold"
+                href={"/profile/".concat(item.idUser)}
+              >
+                {username.split("@")[0]}
+              </a>
+            ) : item.rating < 1900 ? (
+              <a
+                className="text-blue-600 font-bold"
+                href={"/profile/".concat(item.idUser)}
+              >
+                {username.split("@")[0]}
+              </a>
+            ) : item.rating < 2100 ? (
+              <a
+                className="text-purple-500 font-bold"
+                href={"/profile/".concat(item.idUser)}
+              >
+                {username.split("@")[0]}
+              </a>
+            ) : item.rating < 2400 ? (
+              <a
+                className="text-amber-500 font-bold"
+                href={"/profile/".concat(item.idUser)}
+              >
+                {username.split("@")[0]}
+              </a>
+            ) : item.rating < 2600 ? (
+              <a
+                className="text-pink-600 font-bold"
+                href={"/profile/".concat(item.idUser)}
+              >
+                {username.split("@")[0]}
+              </a>
+            ) : (
+              <a
+                className="text-red-600 font-bold"
+                href={"/profile/".concat(item.idUser)}
+              >
+                {username.split("@")[0]}
+              </a>
+            )}
+          </>
+        );
+      },
     },
     {
       title: "Bài tập",

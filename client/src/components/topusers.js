@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 import * as env from "../env.js";
-import { Link } from "react-router-dom";
 
 const TopUsers = () => {
   const [rankingUser, setRankingUser] = useState([]);
@@ -96,12 +95,12 @@ const TopUsers = () => {
                               alt=""
                             />
                           </div>
-                          <Link
-                            to={`/profile/${item._id}`}
+                          <a
+                            href={`/profile/${item._id}`}
                             className="text-sm font-medium text-navy-700"
                           >
                             {item.username.split("@")[0]}
-                          </Link>
+                          </a>
                         </div>
                       </td>
                       <td className="py-3 text-sm" role="cell">

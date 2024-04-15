@@ -7,7 +7,6 @@ import * as env from "../env.js";
 
 import HeaderPage from "../components/header.js";
 import FooterPage from "../components/footer.js";
-import { Link } from "react-router-dom";
 
 const { Content } = Layout;
 
@@ -64,7 +63,7 @@ export default function RankingUser({ currentTab }) {
       render: (item) => {
         return (
           <div>
-            <Link to={`/profile/${item._id}`} className="font-bold">
+            <a href={`/profile/${item._id}`} className="font-bold">
               {item.rating < 1200 ? (
                 <span className="text-stone-400">
                   {item.username.split("@")[0]}
@@ -98,9 +97,9 @@ export default function RankingUser({ currentTab }) {
                   {item.username.split("@")[0]}
                 </span>
               )}
-            </Link>
+            </a>
             <br />
-            <Link to={`/profile/${item._id}`} className="font-bold text-xs">
+            <a href={`/profile/${item._id}`} className="font-bold text-xs">
               {item.rating < 1200 ? (
                 <span className="text-stone-400">
                   {item.name !== "" && item.name}
@@ -134,7 +133,7 @@ export default function RankingUser({ currentTab }) {
                   {item.name !== "" && item.name}
                 </span>
               )}
-            </Link>
+            </a>
           </div>
         );
       },

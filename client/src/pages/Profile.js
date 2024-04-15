@@ -3,8 +3,6 @@ import { Image, Layout, theme, Menu } from "antd";
 import {
   IdcardOutlined,
   RobotOutlined,
-  SolutionOutlined,
-  ProjectOutlined,
   EditOutlined,
 } from "@ant-design/icons";
 import axios from "axios";

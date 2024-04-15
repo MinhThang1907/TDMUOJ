@@ -19,7 +19,7 @@ export default function InfoProfile({ profile, numberOfAccepted, data }) {
 
   const { idUser } = useParams();
 
-  const fetchSubmissionHistory = ({ year }) => {
+  const fetchSubmissionHistory = () => {
     const cal = new CalHeatmap();
     let calendar = document.querySelector("#ex-ghDay");
     let child = calendar?.lastElementChild;
@@ -363,9 +363,7 @@ export default function InfoProfile({ profile, numberOfAccepted, data }) {
       </div>
       <div className="bg-white shadow rounded-lg p-6 mt-5">
         <h2 className="text-xl font-bold mb-4">Lịch sử bài nộp</h2>
-        {fetchSubmissionHistory({
-          year: new Date().getFullYear().toString(),
-        })}
+        {fetchSubmissionHistory()}
       </div>
       <div className="bg-white shadow rounded-lg p-6 mt-5">
         <h2 className="text-xl font-bold mb-4">Lịch sử điểm xếp hạng</h2>

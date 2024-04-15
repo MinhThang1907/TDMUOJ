@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Table } from "antd";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import axios from "axios";
 
 import * as env from "../env.js";
@@ -52,77 +52,76 @@ export default function ContestRanking() {
                             return (
                               <div className="text-base font-semibold mb-4">
                                 {currentUser?.rating < 1200 ? (
-                                  <Link
-                                    to={"/profile/".concat(currentUser._id)}
+                                  <a href={"/profile/".concat(currentUser._id)}
                                     className="text-stone-400 hover:text-stone-400"
                                   >
                                     {currentUser?.name
                                       ? currentUser.name
                                       : currentUser?.username}
-                                  </Link>
+                                  </a>
                                 ) : currentUser?.rating < 1400 ? (
-                                  <Link
-                                    to={"/profile/".concat(currentUser._id)}
+                                  <a
+                                    href={"/profile/".concat(currentUser._id)}
                                     className="text-green-500 hover:text-green-400"
                                   >
                                     {currentUser?.name
                                       ? currentUser.name
                                       : currentUser?.username}
-                                  </Link>
+                                  </a>
                                 ) : currentUser?.rating < 1600 ? (
-                                  <Link
-                                    to={"/profile/".concat(currentUser._id)}
+                                  <a
+                                    href={"/profile/".concat(currentUser._id)}
                                     className="text-cyan-300 hover:text-cyan-400"
                                   >
                                     {currentUser?.name
                                       ? currentUser.name
                                       : currentUser?.username}
-                                  </Link>
+                                  </a>
                                 ) : currentUser?.rating < 1900 ? (
-                                  <Link
-                                    to={"/profile/".concat(currentUser._id)}
+                                  <a
+                                    href={"/profile/".concat(currentUser._id)}
                                     className="text-blue-600 hover:text-blue-400"
                                   >
                                     {currentUser?.name
                                       ? currentUser.name
                                       : currentUser?.username}
-                                  </Link>
+                                  </a>
                                 ) : currentUser?.rating < 2100 ? (
-                                  <Link
-                                    to={"/profile/".concat(currentUser._id)}
+                                  <a
+                                    href={"/profile/".concat(currentUser._id)}
                                     className="text-purple-500 hover:text-purple-400"
                                   >
                                     {currentUser?.name
                                       ? currentUser.name
                                       : currentUser?.username}
-                                  </Link>
+                                  </a>
                                 ) : currentUser?.rating < 2400 ? (
-                                  <Link
-                                    to={"/profile/".concat(currentUser._id)}
+                                  <a
+                                    href={"/profile/".concat(currentUser._id)}
                                     className="text-amber-500 hover:text-amber-400"
                                   >
                                     {currentUser?.name
                                       ? currentUser.name
                                       : currentUser?.username}
-                                  </Link>
+                                  </a>
                                 ) : currentUser?.rating < 2600 ? (
-                                  <Link
-                                    to={"/profile/".concat(currentUser._id)}
+                                  <a
+                                    href={"/profile/".concat(currentUser._id)}
                                     className="text-pink-600 hover:text-pink-400"
                                   >
                                     {currentUser?.name
                                       ? currentUser.name
                                       : currentUser?.username}
-                                  </Link>
+                                  </a>
                                 ) : (
-                                  <Link
-                                    to={"/profile/".concat(currentUser._id)}
+                                  <a
+                                    href={"/profile/".concat(currentUser._id)}
                                     className="text-red-600 hover:text-red-400"
                                   >
                                     {currentUser?.name
                                       ? currentUser.name
                                       : currentUser?.username}
-                                  </Link>
+                                  </a>
                                 )}
                               </div>
                             );

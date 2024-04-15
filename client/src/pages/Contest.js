@@ -20,7 +20,7 @@ import * as env from "../env.js";
 
 import HeaderPage from "../components/header.js";
 import FooterPage from "../components/footer.js";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const { Content } = Layout;
 
@@ -424,12 +424,12 @@ export default function Contest({ currentTab }) {
           }
           return (
             <div>
-              <Link
-                to={"/contest/".concat(item.idContest)}
+              <a
+                href={"/contest/".concat(item.idContest)}
                 className="text-cyan-500 text-xl"
               >
                 {item.nameContest}
-              </Link>
+              </a>
               <div>
                 Kết thúc trong{" "}
                 {timeEnd.diff(current, "days") !== 0 && (
@@ -538,12 +538,12 @@ export default function Contest({ currentTab }) {
           }
           return (
             <div>
-              <Link
-                to={"/contest/".concat(item.idContest)}
+              <a
+                href={"/contest/".concat(item.idContest)}
                 className="text-cyan-500 text-xl"
               >
                 {item.nameContest}
-              </Link>{" "}
+              </a>{" "}
               {/*Link to detail contest*/}
               <div>
                 Bắt đầu trong{" "}
@@ -631,12 +631,12 @@ export default function Contest({ currentTab }) {
         render: (item) => {
           return (
             <div>
-              <Link
-                to={"/contest/".concat(item.idContest)}
+              <a
+                href={"/contest/".concat(item.idContest)}
                 className="text-cyan-500 text-xl"
               >
                 {item.nameContest}
-              </Link>{" "}
+              </a>{" "}
               {/*Link to detail contest*/}
               <div className="mt-2 font-normal text-gray-400 text-base">
                 Bắt đầu thi: {item.timeStart}
@@ -732,12 +732,12 @@ export default function Contest({ currentTab }) {
       return (
         <div>
           {data.map((item, index) => (
-            <Link
-              to={"/contest/".concat(item.idContest)}
+            <a
+              href={"/contest/".concat(item.idContest)}
               title={item.nameContest}
             >
               <div className="font-bold">{item.nameContest}</div>
-            </Link>
+            </a>
           ))}
         </div>
       );
