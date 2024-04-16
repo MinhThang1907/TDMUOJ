@@ -59,6 +59,14 @@ const HeaderPage = ({ currentTab }) => {
         },
         {
           label: (
+            <Link to="/courses" className="font-bold">
+              KHÓA HỌC
+            </Link>
+          ),
+          key: "courses",
+        },
+        {
+          label: (
             <Link to="/administration" className="font-bold">
               QUẢN LÝ
             </Link>
@@ -107,6 +115,14 @@ const HeaderPage = ({ currentTab }) => {
             </Link>
           ),
           key: "education",
+        },
+        {
+          label: (
+            <Link to="/courses" className="font-bold">
+              KHÓA HỌC
+            </Link>
+          ),
+          key: "courses",
         },
       ]);
     }

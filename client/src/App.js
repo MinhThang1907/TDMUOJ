@@ -16,6 +16,7 @@ import DetailContest from "./pages/DetailContest.js";
 import Member from "./pages/Member.js";
 import Education from "./pages/Education.js";
 import RankingUser from "./pages/RankingUser.js";
+import Courses from "./pages/Courses.js";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -406,6 +407,10 @@ function App() {
         <Route
           path="/education"
           element={<Education currentTab="education" />}
+        ></Route>
+        <Route
+          path="/courses"
+          element={<Courses currentTab="courses" />}
         ></Route>
       </Routes>
     </div>
