@@ -9,13 +9,13 @@ export default function PaintGraph() {
   );
   const [edgeSymbol, setEdgeSymbol] = useState([]);
   const [nodes, setNodes] = useState([
-    { id: "1", name: "1" },
-    { id: "2", name: "2" },
-    { id: "3", name: "3" },
-    { id: "4", name: "4" },
-    { id: "5", name: "5" },
-    { id: "14", name: "14" },
-    { id: "15", name: "15" },
+    { id: "1", name: "1", value: "1", label: "1" },
+    { id: "2", name: "2", value: "2", label: "2" },
+    { id: "3", name: "3", value: "3", label: "3" },
+    { id: "4", name: "4", value: "4", label: "4" },
+    { id: "5", name: "5", value: "5", label: "5" },
+    { id: "14", name: "14", value: "14", label: "14" },
+    { id: "15", name: "15", value: "15", label: "15" },
   ]);
   const [edges, setEdges] = useState([
     [1, 2, ""],
