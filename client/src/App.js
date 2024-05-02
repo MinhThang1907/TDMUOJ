@@ -215,7 +215,9 @@ function App() {
             let checkExist =
               await responseSubmission.data.dataSubmissions.filter(
                 (x) =>
-                  x.status === "Đang chờ" || x.status.includes("Processing")
+                  x.status === "Đang chờ" ||
+                  x.status.includes("Processing") ||
+                  x.status.includes("Queue")
               );
             if (checkExist.length > 0) {
               checkExist.forEach(async (element) => {
