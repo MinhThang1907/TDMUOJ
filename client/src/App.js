@@ -233,14 +233,16 @@ function App() {
                     memory_limit: problem.memoryLimit * 1024,
                   });
                 });
-                await runTestCase({
-                  submission: submission,
-                  testcase: problem.testCase,
-                  currentSubmission: element.idSubmission,
-                  idProblem: element.idProblem,
-                  idUser: element.idUser,
-                  memoryLimit: problem.memoryLimit * 1024,
-                });
+                if (submission.length > 0) {
+                  await runTestCase({
+                    submission: submission,
+                    testcase: problem.testCase,
+                    currentSubmission: element.idSubmission,
+                    idProblem: element.idProblem,
+                    idUser: element.idUser,
+                    memoryLimit: problem.memoryLimit * 1024,
+                  });
+                }
               });
             }
           })
