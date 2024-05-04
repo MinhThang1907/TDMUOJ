@@ -186,9 +186,9 @@ const HeaderPage = ({ currentTab }) => {
     },
     {
       label: (
-        <Link to="/" onClick={Logout}>
+        <a href="/" onClick={Logout}>
           ĐĂNG XUẤT
-        </Link>
+        </a>
       ),
       key: "logout",
     },
