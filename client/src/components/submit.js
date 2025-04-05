@@ -73,6 +73,10 @@ export default function Submit({
   };
 
   const Submit = async () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
     let idSubmission = await shortid.generate();
     axios
       .post(env.API_URL + "/submission", {

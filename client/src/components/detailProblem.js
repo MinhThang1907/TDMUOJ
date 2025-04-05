@@ -104,6 +104,8 @@ export default function DetailProblem({
       openWarningNotificationWithIcon({
         message: "Vui lòng chọn file thích hợp",
       });
+    } else if (!user) {
+      navigate("/login");
     } else {
       axios
         .post(env.API_URL + "/submission", {

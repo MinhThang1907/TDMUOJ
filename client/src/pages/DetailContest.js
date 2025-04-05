@@ -174,7 +174,7 @@ export default function DetailContest() {
                             (x) =>
                               x.idProblem === contest.problems[index].idProblem
                           )
-                          ?.solved.find((x) => x === user._id) && (
+                          ?.solved.find((x) => x === user?._id) && (
                           <CheckCircleFilled className="text-green-500" />
                         )}
                       </span>,
@@ -213,7 +213,7 @@ export default function DetailContest() {
                             (x) =>
                               x.idProblem === contest.problems[index].idProblem
                           )
-                          ?.solved.find((x) => x === user._id) && (
+                          ?.solved.find((x) => x === user?._id) && (
                           <CheckCircleFilled className="text-green-500" />
                         )}
                       </span>,
@@ -457,7 +457,7 @@ export default function DetailContest() {
                         )?.idContestVirtual === idContest
                           ? false
                           : status === "finished" ||
-                            !contest.participants.find((x) => x.idUser === user._id)
+                            !contest.participants.find((x) => x.idUser === user?._id)
                       }
                     />
                     <Divider />
@@ -537,7 +537,7 @@ export default function DetailContest() {
               )}
               {keyMain === "ranking" && <ContestRanking />}
               {keyMain === "MySubmissions" && (
-                <SubmissionTable idContest={idContest} idUser={user._id} />
+                <SubmissionTable idContest={idContest} idUser={user?._id} />
               )}
             </>
           )}

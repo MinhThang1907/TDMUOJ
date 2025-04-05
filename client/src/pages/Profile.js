@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Image, Layout, theme, Menu } from "antd";
-import {
-  IdcardOutlined,
-  RobotOutlined,
-  EditOutlined,
-} from "@ant-design/icons";
+import { IdcardOutlined, RobotOutlined, EditOutlined } from "@ant-design/icons";
 import axios from "axios";
 
 import * as env from "../env.js";
@@ -15,7 +11,7 @@ import InfoProfile from "../components/infoProfile.js";
 import EditProfile from "../components/editProfile.js";
 import RequestNews from "../components/requestNews.js";
 import ChatBox from "../components/chatBox.js";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const { Content } = Layout;
 
@@ -23,6 +19,7 @@ export default function Profile() {
   const user = localStorage.getItem("dataUser")
     ? JSON.parse(localStorage.getItem("dataUser"))
     : null;
+  const navigate = useNavigate();
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -86,37 +83,45 @@ export default function Profile() {
       });
   };
   const handleFollow = () => {
-    axios
-      .put(env.API_URL + "/update-followers", {
-        id: idUser,
-        followers: [...profile.followers, user._id],
-      })
-      .then(function (response) {
-        fetchProfile();
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+    if (!user) {
+      navigate("/login");
+    } else {
+      axios
+        .put(env.API_URL + "/update-followers", {
+          id: idUser,
+          followers: [...profile.followers, user._id],
+        })
+        .then(function (response) {
+          fetchProfile();
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
   };
   const handleUnFollow = () => {
-    axios
-      .put(env.API_URL + "/update-followers", {
-        id: idUser,
-        followers: profile.followers.filter((x) => x !== user._id),
-      })
-      .then(function (response) {
-        fetchProfile();
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+    if (!user) {
+      navigate("/login");
+    } else {
+      axios
+        .put(env.API_URL + "/update-followers", {
+          id: idUser,
+          followers: profile.followers.filter((x) => x !== user._id),
+        })
+        .then(function (response) {
+          fetchProfile();
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
   };
 
   const [numberOfAccepted, setNumberOfAccepted] = useState(0);
 
   useEffect(() => {
     fetchProfile();
-    if (idUser === user._id) {
+    if (user && idUser === user._id) {
       setItems([
         ...items,
         getItem(
@@ -240,7 +245,7 @@ export default function Profile() {
                         </span>
                       )}
                     </h1>
-                    {idUser !== user._id && (
+                    {user && idUser !== user._id && (
                       <div className="mt-6 flex flex-wrap gap-4 justify-center">
                         {!profile?.followers?.find((x) => x === user._id) ? (
                           <div

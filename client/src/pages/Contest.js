@@ -234,74 +234,78 @@ export default function Contest({ currentTab }) {
       cancelText: "Hủy",
       okType: "danger",
       onOk() {
-        axios
-          .get(env.API_URL + "/contest", {})
-          .then(async (response) => {
-            let contest = await response.data.dataContests.find(
-              (x) => x.idContest === id
-            );
-            if (contest) {
-              axios
-                .put(env.API_URL + "/update-participants", {
-                  id: id,
-                  participants: [
-                    ...contest.participants,
-                    { idUser: user._id, seed: 0 },
-                  ],
-                })
-                .then(function (response) {
-                  axios
-                    .get(env.API_URL + "/ranking-contest", {})
-                    .then(async (responseRankingContest) => {
-                      let rankingContest =
-                        await responseRankingContest.data.dataRankingContests.find(
-                          (x) => x.idContest === id
-                        );
-                      if (rankingContest) {
-                        let listProblem = [];
-                        await contest.problems.forEach((element, index) => {
-                          listProblem.push({
-                            idProblem: element.idProblem,
-                            nameProblem: String.fromCharCode(65 + index),
-                            idSubmission: [],
+        if (user) {
+          axios
+            .get(env.API_URL + "/contest", {})
+            .then(async (response) => {
+              let contest = await response.data.dataContests.find(
+                (x) => x.idContest === id
+              );
+              if (contest) {
+                axios
+                  .put(env.API_URL + "/update-participants", {
+                    id: id,
+                    participants: [
+                      ...contest.participants,
+                      { idUser: user._id, seed: 0 },
+                    ],
+                  })
+                  .then(function (response) {
+                    axios
+                      .get(env.API_URL + "/ranking-contest", {})
+                      .then(async (responseRankingContest) => {
+                        let rankingContest =
+                          await responseRankingContest.data.dataRankingContests.find(
+                            (x) => x.idContest === id
+                          );
+                        if (rankingContest) {
+                          let listProblem = [];
+                          await contest.problems.forEach((element, index) => {
+                            listProblem.push({
+                              idProblem: element.idProblem,
+                              nameProblem: String.fromCharCode(65 + index),
+                              idSubmission: [],
+                            });
                           });
-                        });
-                        await axios
-                          .put(env.API_URL + "/ranking-contest", {
-                            id: id,
-                            listUser: [
-                              ...rankingContest.listUser,
-                              {
-                                rank: 9999,
-                                idUser: user._id,
-                                score: 0,
-                                penalty: 0,
-                                problems: listProblem,
-                              },
-                            ],
-                          })
-                          .then(function (response) {
-                            successMessage();
-                            fetchDataContests();
-                            calculateExpectedPlace({ idContest: id });
-                          })
-                          .catch(function (error) {
-                            console.log(error);
-                          });
-                      }
-                    })
-                    .catch(function (error) {
-                      console.log(error);
-                    });
-                })
-                .catch(function (error) {
-                  console.log(error);
-                });
-            }
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
+                          await axios
+                            .put(env.API_URL + "/ranking-contest", {
+                              id: id,
+                              listUser: [
+                                ...rankingContest.listUser,
+                                {
+                                  rank: 9999,
+                                  idUser: user._id,
+                                  score: 0,
+                                  penalty: 0,
+                                  problems: listProblem,
+                                },
+                              ],
+                            })
+                            .then(function (response) {
+                              successMessage();
+                              fetchDataContests();
+                              calculateExpectedPlace({ idContest: id });
+                            })
+                            .catch(function (error) {
+                              console.log(error);
+                            });
+                        }
+                      })
+                      .catch(function (error) {
+                        console.log(error);
+                      });
+                  })
+                  .catch(function (error) {
+                    console.log(error);
+                  });
+              }
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+        } else {
+          navigate("/login");
+        }
       },
     });
   };
@@ -514,7 +518,11 @@ export default function Contest({ currentTab }) {
         key: "register",
         align: "center",
         render: (item) => {
-          if (!item.participants.find((x) => x.idUser === user._id)) {
+          if (
+            !item.participants.find(
+              (x) => x.idUser === (user ? user._id : null)
+            )
+          ) {
             return (
               <Button onClick={() => Register({ id: item.idContest })}>
                 Đăng ký
