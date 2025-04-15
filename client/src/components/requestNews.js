@@ -36,6 +36,12 @@ export default function RequestNews() {
     });
     return data;
   };
+  async function dataURLtoBlob(dataURL) {
+    // fetch sẽ tự parse Data URL và trả về Response
+    const res = await fetch(dataURL);
+    return await res.blob();
+  }
+
   const handleUploadImage = async (e) => {
     const file = e.target.files[0];
     const fileType = file["type"];
@@ -48,29 +54,64 @@ export default function RequestNews() {
       setUploadImageError(true);
     }
   };
-  const requestNews = () => {
+  const requestNews = async () => {
     if (title === "" || content === "") {
       errorMessage({ content: "Vui lòng điền đầy đủ thông tin" });
       return;
     }
-    axios
-      .post(env.API_URL + "/news", {
-        title: title,
-        content: content,
-        image: image,
-        idUser: user._id,
-        pending: false,
-      })
-      .then(function (response) {
-        setTitle("");
-        setContent("");
-        setImage("");
-        successMessage({ content: "Đã yêu cầu đăng tin tức thành công" });
-      })
-      .catch(function (error) {
-        console.log(error);
-        errorMessage({ content: "Gửi yêu cầu thất bại" });
-      });
+
+    try {
+      let imageUrl = "";
+      if (image) {
+        const blob = await dataURLtoBlob(image);
+        if (!blob) {
+          console.error("Failed to convert canvas to blob");
+          return;
+        }
+        const formData = new FormData();
+        formData.append("file", blob, "avatar.jpg");
+
+        if (!env.UPLOAD_PRESET || !env.CLOUD_NAME) {
+          throw new Error("Missing Cloudinary environment variables");
+        }
+
+        formData.append("upload_preset", env.UPLOAD_PRESET);
+        formData.append("cloud_name", env.CLOUD_NAME);
+
+        const apiUrl = `https://api.cloudinary.com/v1_1/${env.CLOUD_NAME}/image/upload`;
+
+        const response = await axios.post(apiUrl, formData, {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "multipart/form-data",
+          },
+          timeout: 30000,
+        });
+
+        imageUrl = response.data.secure_url;
+      }
+      await axios
+        .post(env.API_URL + "/news", {
+          title: title,
+          content: content,
+          image: imageUrl,
+          idUser: user._id,
+          pending: false,
+        })
+        .then(function (response) {
+          setTitle("");
+          setContent("");
+          setImage("");
+          successMessage({ content: "Đã yêu cầu đăng tin tức thành công" });
+        })
+        .catch(function (error) {
+          console.log(error);
+          errorMessage({ content: "Gửi yêu cầu thất bại" });
+        });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      throw error;
+    }
   };
   return (
     <div className="col-span-4 sm:col-span-9">

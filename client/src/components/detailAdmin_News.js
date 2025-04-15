@@ -5,7 +5,16 @@ import {
   PlusOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
-import { Input, Button, Space, Table, FloatButton, Modal, message, Select } from "antd";
+import {
+  Input,
+  Button,
+  Space,
+  Table,
+  FloatButton,
+  Modal,
+  message,
+  Select,
+} from "antd";
 import axios from "axios";
 
 import * as env from "../env.js";
@@ -403,27 +412,60 @@ export default function DetailNews() {
       },
     });
   };
-  const editNews = () => {
-    axios
-      .put(env.API_URL + "/update-news", {
-        id: idNews,
-        title: title,
-        content: content,
-        image: image,
-      })
-      .then(function (response) {
-        successMessage();
-        fetchDataNews();
-        handleCancelModalEditNews();
-        setIdNews("");
-        setTitle("");
-        setContent("");
-        setImage("");
-      })
-      .catch(function (error) {
-        console.log(error);
-        errorMessage();
-      });
+  const editNews = async () => {
+    if (image !== "") {
+      const blob = await dataURLtoBlob(image);
+      if (!blob) {
+        console.error("Failed to convert canvas to blob");
+        return;
+      }
+      try {
+        const formData = new FormData();
+        formData.append("file", blob, "avatar.jpg");
+
+        if (!env.UPLOAD_PRESET || !env.CLOUD_NAME) {
+          throw new Error("Missing Cloudinary environment variables");
+        }
+
+        formData.append("upload_preset", env.UPLOAD_PRESET);
+        formData.append("cloud_name", env.CLOUD_NAME);
+
+        const apiUrl = `https://api.cloudinary.com/v1_1/${env.CLOUD_NAME}/image/upload`;
+
+        const response = await axios.post(apiUrl, formData, {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "multipart/form-data",
+          },
+          timeout: 30000,
+        });
+
+        const imageUrl = response.data.secure_url;
+        await axios
+          .put(env.API_URL + "/update-news", {
+            id: idNews,
+            title: title,
+            content: content,
+            image: imageUrl,
+          })
+          .then(function (response) {
+            successMessage();
+            fetchDataNews();
+            handleCancelModalEditNews();
+            setIdNews("");
+            setTitle("");
+            setContent("");
+            setImage("");
+          })
+          .catch(function (error) {
+            console.log(error);
+            errorMessage();
+          });
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        throw error;
+      }
+    }
   };
 
   const [idNews, setIdNews] = useState("");
@@ -442,6 +484,12 @@ export default function DetailNews() {
     return data;
   };
 
+  async function dataURLtoBlob(dataURL) {
+    // fetch sẽ tự parse Data URL và trả về Response
+    const res = await fetch(dataURL);
+    return await res.blob();
+  }
+
   const handleUploadImage = async (e) => {
     const file = e.target.files[0];
     const fileType = file["type"];
@@ -459,6 +507,40 @@ export default function DetailNews() {
     <>
       {contextHolder}
       {warningDelete}
+      <Modal
+        closeIcon={null}
+        open={isModalDetailNews}
+        onCancel={handleCancelModalDetailNews}
+        footer={null}
+        className="justify-center w-[900px] flex"
+      >
+        <div className="w-[900px] max-w-4xl">
+          <div className="bg-white">
+            <div className="container px-6 py-10 mx-auto">
+              <h1 className="text-3xl font-semibold text-gray-800 capitalize lg:text-4xl">
+                {title}
+              </h1>
+
+              <div className="mt-8 lg:-mx-6 lg:items-center">
+                <div className="mt-6 lg:w-full lg:mt-0 lg:mx-6 ">
+                  <p className="mt-3 text-sm text-gray-500 md:text-sm">
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: content.replace("\n", "<br />"),
+                      }}
+                    ></div>
+                  </p>
+                </div>
+              </div>
+              <img
+                className="object-cover w-full rounded-xl mt-5"
+                src={image}
+                alt=""
+              />
+            </div>
+          </div>
+        </div>
+      </Modal>
       <Modal
         closeIcon={null}
         open={isModalPendingNews}
@@ -568,40 +650,7 @@ export default function DetailNews() {
           </div>
         </div>
       </Modal>
-      <Modal
-        closeIcon={null}
-        open={isModalDetailNews}
-        onCancel={handleCancelModalDetailNews}
-        footer={null}
-        className="justify-center w-[900px] flex"
-      >
-        <div className="w-[900px] max-w-4xl">
-          <div className="bg-white">
-            <div className="container px-6 py-10 mx-auto">
-              <h1 className="text-3xl font-semibold text-gray-800 capitalize lg:text-4xl">
-                {title}
-              </h1>
 
-              <div className="mt-8 lg:-mx-6 lg:items-center">
-                <div className="mt-6 lg:w-full lg:mt-0 lg:mx-6 ">
-                  <p className="mt-3 text-sm text-gray-500 md:text-sm">
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: content.replace("\n", "<br />"),
-                      }}
-                    ></div>
-                  </p>
-                </div>
-              </div>
-              <img
-                className="object-cover w-full rounded-xl mt-5"
-                src={image}
-                alt=""
-              />
-            </div>
-          </div>
-        </div>
-      </Modal>
       <FloatButton.Group>
         <FloatButton
           tooltip={<div>Thêm tin tức mới</div>}

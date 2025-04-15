@@ -24,47 +24,74 @@ const ChangeAvatar = ({ picture, setPicture, fetchProfile }) => {
     editor = ed;
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     if (setEditorRef) {
       const canvasScaled = editor.getImageScaledToCanvas();
-      const croppedImg = canvasScaled.toDataURL();
-      //   console.log("croppedImg:", croppedImg);
-      axios
-        .put(env.API_URL + "/update-avatar", {
-          id: user._id,
-          avatar: croppedImg,
-        })
-        .then(function (response) {
-          axios
-            .get(env.API_URL + "/account", {})
-            .then(async function (response) {
-              let checkExist = await response.data.dataAccounts.find(
-                (x) => x._id === user._id
-              );
-              if (checkExist) {
-                localStorage.setItem("dataUser", JSON.stringify(checkExist));
-                setPicture({
-                  ...picture,
-                  img: checkExist.avatar,
-                  cropperOpen: false,
-                  croppedImg: checkExist.avatar,
+      canvasScaled.toBlob(async (blob) => {
+        if (!blob) {
+          console.error("Failed to convert canvas to blob");
+          return;
+        }
+        try {
+          const formData = new FormData();
+          formData.append("file", blob, "avatar.jpg");
+
+          if (!env.UPLOAD_PRESET || !env.CLOUD_NAME) {
+            throw new Error("Missing Cloudinary environment variables");
+          }
+
+          formData.append("upload_preset", env.UPLOAD_PRESET);
+          formData.append("cloud_name", env.CLOUD_NAME);
+
+          const apiUrl = `https://api.cloudinary.com/v1_1/${env.CLOUD_NAME}/image/upload`;
+
+          const response = await axios.post(apiUrl, formData, {
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "multipart/form-data",
+            },
+            timeout: 30000,
+          });
+
+          const imageUrl = response.data.secure_url;
+          await axios
+            .put(env.API_URL + "/update-avatar", {
+              id: user._id,
+              avatar: imageUrl,
+            })
+            .then(function (response) {
+              axios
+                .get(env.API_URL + "/account", {})
+                .then(async function (response) {
+                  let checkExist = await response.data.dataAccounts.find(
+                    (x) => x._id === user._id
+                  );
+                  if (checkExist) {
+                    localStorage.setItem(
+                      "dataUser",
+                      JSON.stringify(checkExist)
+                    );
+                    setPicture({
+                      ...picture,
+                      img: checkExist.avatar,
+                      cropperOpen: false,
+                      croppedImg: checkExist.avatar,
+                    });
+                    messageApi.success("Cập nhật ảnh đại diện thành công");
+                    fetchProfile();
+                  }
+                })
+                .catch(function (error) {
+                  console.log(error);
                 });
-                messageApi.success("Cập nhật ảnh đại diện thành công");
-                fetchProfile();
-              }
             })
             .catch(function (error) {
               console.log(error);
             });
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-      setPicture({
-        ...picture,
-        img: null,
-        cropperOpen: false,
-        croppedImg: croppedImg,
+        } catch (error) {
+          console.error("Error uploading image:", error);
+          throw error;
+        }
       });
     }
   };

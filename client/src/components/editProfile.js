@@ -228,6 +228,7 @@ export default function EditProfile({ fetchProfile }) {
             <div className="relative flex flex-col justify-start rounded-md border border-dashed border-[#e0e0e0] p-12 text-center">
               <div className="flex justify-start mb-1">Nhập email cũ:</div>
               <Input
+                type="email"
                 placeholder="Nhập email cũ"
                 value={oldEmail}
                 onChange={(e) => setOldEmail(e.target.value)}
@@ -240,6 +241,7 @@ export default function EditProfile({ fetchProfile }) {
               )}
               <div className="flex justify-start mb-1">Nhập email mới:</div>
               <Input
+                type="email"
                 placeholder="Nhập email mới"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
