@@ -17,6 +17,7 @@ import Member from "./pages/Member.js";
 import Education from "./pages/Education.js";
 import RankingUser from "./pages/RankingUser.js";
 import Courses from "./pages/Courses.js";
+import CategoryManagement from "./pages/CategoryManagement";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -416,6 +417,10 @@ function App() {
           path="/courses"
           element={<Courses currentTab="courses" />}
         ></Route>
+        <Route
+          path="/category-management"
+          element={<CategoryManagement currentTab="courses" />}
+        />
       </Routes>
     </div>
   );
